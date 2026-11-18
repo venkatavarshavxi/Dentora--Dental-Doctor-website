@@ -90,3 +90,34 @@ export interface FaqItem {
   question: string;
   answer: string;
 }
+
+export interface CustomerAccount {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  createdAt: string;
+}
+
+export interface DoctorCredential {
+  doctorId: string;
+  email: string;
+  password: string;
+}
+
+export type AuthSession =
+  | {
+      role: 'customer';
+      id: string;
+      name: string;
+      email: string;
+      phone: string;
+    }
+  | {
+      role: 'doctor';
+      doctorId: string;
+      name: string;
+      email: string;
+      roleTitle: string;
+    };

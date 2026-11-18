@@ -1,10 +1,11 @@
 import { CheckCircle2, MessageSquarePlus, Search, Stethoscope } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { DOCTORS } from '../data/seedData';
-import { DentalQuestion, QuestionTopic } from '../types/dental';
+import { AuthSession, DentalQuestion, QuestionTopic } from '../types/dental';
 
 interface AskDentistSectionProps {
   questions: DentalQuestion[];
+  session?: AuthSession | null;
   onSubmitQuestion: (input: {
     patientName: string;
     patientEmail: string;
@@ -31,6 +32,7 @@ const ALPHABETS_ONLY_REGEX = /^[A-Za-z\s.'-]{2,}$/;
 
 export function AskDentistSection({
   questions,
+  session,
   onSubmitQuestion,
   onReplyQuestion,
   onBookConsultation,
@@ -51,6 +53,15 @@ export function AskDentistSection({
   const [replyDoctorId, setReplyDoctorId] = useState(DOCTORS[0].id);
   const [replyText, setReplyText] = useState('');
   const [replyError, setReplyError] = useState('');
+
+  useEffect(() => {
+    if (session?.role === 'customer') {
+      setPatientName((prev) => prev || session.name);
+      setPatientEmail((prev) => prev || session.email);
+    } else if (session?.role === 'doctor') {
+      setReplyDoctorId(session.doctorId);
+    }
+  }, [session]);
 
   const handleNameChange = (rawValue: string) => {
     const cleaned = rawValue.replace(/[^A-Za-z\s.'-]/g, '');

@@ -1,13 +1,24 @@
-import { Calendar, CalendarClock, FileText, Plus, Search, X } from 'lucide-react';
+import {
+  Calendar,
+  CalendarClock,
+  FileText,
+  LogIn,
+  LogOut,
+  Plus,
+  Search,
+  UserCheck,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
 import { DOCTORS, TIME_SLOTS, TREATMENTS } from '../data/seedData';
 import { getSlotAvailability } from '../db/dentalStore';
-import { Appointment } from '../types/dental';
+import { Appointment, AuthSession } from '../types/dental';
 import { AppointmentSlipModal } from './AppointmentSlipModal';
 import { ClinicDatePicker } from './ClinicDatePicker';
 
 interface AppointmentsDrawerProps {
   isOpen: boolean;
+  session: AuthSession | null;
   appointments: Appointment[];
   onClose: () => void;
   onCancelAppointment: (id: string) => void;
@@ -17,19 +28,25 @@ interface AppointmentsDrawerProps {
     newTimeSlot: string,
   ) => { ok: true } | { ok: false; error: string };
   onNewBooking: () => void;
+  onOpenLogin: () => void;
+  onLogout: () => void;
 }
 
 export function AppointmentsDrawer({
   isOpen,
+  session,
   appointments,
   onClose,
   onCancelAppointment,
   onRescheduleAppointment,
   onNewBooking,
+  onOpenLogin,
+  onLogout,
 }: AppointmentsDrawerProps) {
   const [statusFilter, setStatusFilter] = useState<
     'All' | 'Confirmed' | 'Cancelled'
   >('All');
+  const [scopeFilter, setScopeFilter] = useState<'mine' | 'all'>('mine');
   const [searchTerm, setSearchTerm] = useState('');
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
   const [newDate, setNewDate] = useState('');
@@ -40,6 +57,11 @@ export function AppointmentsDrawer({
   if (!isOpen) return null;
 
   const filteredAppointments = appointments.filter((apt) => {
+    const matchesScope =
+      session?.role === 'customer' && scopeFilter === 'mine'
+        ? apt.patientEmail.toLowerCase() === session.email.toLowerCase() ||
+          apt.patientPhone === session.phone
+        : true;
     const matchesStatus =
       statusFilter === 'All' || apt.status === statusFilter;
     const query = searchTerm.trim().toLowerCase();
@@ -48,7 +70,7 @@ export function AppointmentsDrawer({
       apt.patientName.toLowerCase().includes(query) ||
       apt.id.toLowerCase().includes(query) ||
       apt.patientPhone.includes(query);
-    return matchesStatus && matchesSearch;
+    return matchesScope && matchesStatus && matchesSearch;
   });
 
   const startReschedule = (apt: Appointment) => {
@@ -103,8 +125,79 @@ export function AppointmentsDrawer({
           </button>
         </div>
 
+        {/* Account Status Banner */}
+        <div className="border-b border-blue-100 bg-blue-50/70 px-6 py-3">
+          {session ? (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <UserCheck className="h-4 w-4 shrink-0 text-blue-700" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-slate-900">
+                    {session.name}
+                  </p>
+                  <p className="truncate text-[11px] text-slate-600">
+                    {session.role === 'doctor' ? 'Specialist Account' : session.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-red-300 hover:text-red-600 cursor-pointer"
+              >
+                <LogOut className="h-3 w-3" aria-hidden="true" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[11px] text-slate-600">
+                Sign in to filter your personal visits &amp; slips
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenLogin();
+                }}
+                className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-blue-700 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-blue-800 cursor-pointer"
+              >
+                <LogIn className="h-3 w-3" aria-hidden="true" />
+                <span>Sign In</span>
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Search & Status Filter Bar */}
         <div className="border-b border-slate-200 bg-white px-6 py-3.5 space-y-3">
+          {session?.role === 'customer' && (
+            <div className="grid grid-cols-2 gap-1 rounded-lg bg-blue-50 p-1">
+              <button
+                type="button"
+                onClick={() => setScopeFilter('mine')}
+                className={`rounded-md py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                  scopeFilter === 'mine'
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                My Visits
+              </button>
+              <button
+                type="button"
+                onClick={() => setScopeFilter('all')}
+                className={`rounded-md py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                  scopeFilter === 'all'
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                All Clinic
+              </button>
+            </div>
+          )}
+
           <div className="relative">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"

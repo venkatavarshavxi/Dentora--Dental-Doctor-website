@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react';
 import { AppointmentsDrawer } from './components/AppointmentsDrawer';
 import { AskDentistSection } from './components/AskDentistSection';
 import { BookingModal } from './components/BookingModal';
+import { DoctorDashboardModal } from './components/DoctorDashboardModal';
 import { DoctorDetailModal } from './components/DoctorDetailModal';
 import { Footer } from './components/Footer';
 import { HeroSection } from './components/HeroSection';
+import { LoginModal } from './components/LoginModal';
 import { Navbar } from './components/Navbar';
 import { PreVisitSection } from './components/PreVisitSection';
 import { SpecialistGrid } from './components/SpecialistGrid';
 import { ToastPopup } from './components/ToastPopup';
 import { TreatmentDetailModal } from './components/TreatmentDetailModal';
 import { TreatmentShowcase } from './components/TreatmentShowcase';
+import { loadSession, saveSession } from './db/authStore';
 import {
   cancelAppointment,
   loadAppointments,
@@ -22,6 +25,7 @@ import {
 } from './db/dentalStore';
 import {
   Appointment,
+  AuthSession,
   DentalQuestion,
   Doctor,
   QuestionTopic,
@@ -37,9 +41,14 @@ export default function App() {
   const [questions, setQuestions] = useState<DentalQuestion[]>(() =>
     loadQuestions(),
   );
+  const [session, setSession] = useState<AuthSession | null>(() =>
+    loadSession(),
+  );
 
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [appointmentsDrawerOpen, setAppointmentsDrawerOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [doctorDashboardOpen, setDoctorDashboardOpen] = useState(false);
   const [selectedTreatment, setSelectedTreatment] = useState<Treatment | null>(
     null,
   );
@@ -66,6 +75,23 @@ export default function App() {
     setPreselectedDoctorId(doctorId);
     setPreselectedTreatmentId(treatmentId);
     setBookingModalOpen(true);
+  };
+
+  const handleLoginSuccess = (newSession: AuthSession) => {
+    setSession(newSession);
+    if (newSession.role === 'doctor') {
+      setDoctorDashboardOpen(true);
+      setToastMessage(`Welcome back, ${newSession.name}.`);
+    } else {
+      setToastMessage(`Signed in as ${newSession.name}.`);
+    }
+  };
+
+  const handleLogout = () => {
+    saveSession(null);
+    setSession(null);
+    setDoctorDashboardOpen(false);
+    setToastMessage('You have been signed out.');
   };
 
   const handleConfirmBooking = (input: {
@@ -150,8 +176,11 @@ export default function App() {
     <div className="min-h-screen bg-[#F0F5FB] text-slate-900">
       <Navbar
         appointmentCount={confirmedCount}
+        session={session}
         onOpenBooking={() => openBooking()}
         onOpenAppointments={() => setAppointmentsDrawerOpen(true)}
+        onOpenLogin={() => setLoginModalOpen(true)}
+        onOpenDoctorPortal={() => setDoctorDashboardOpen(true)}
       />
 
       <main>
@@ -171,6 +200,7 @@ export default function App() {
 
         <AskDentistSection
           questions={questions}
+          session={session}
           onSubmitQuestion={handleSubmitQuestion}
           onReplyQuestion={handleReplyQuestion}
           onBookConsultation={() => openBooking()}
@@ -183,6 +213,7 @@ export default function App() {
 
       <BookingModal
         isOpen={bookingModalOpen}
+        session={session}
         initialDoctorId={preselectedDoctorId}
         initialTreatmentId={preselectedTreatmentId}
         existingAppointments={appointments}
@@ -204,11 +235,31 @@ export default function App() {
 
       <AppointmentsDrawer
         isOpen={appointmentsDrawerOpen}
+        session={session}
         appointments={appointments}
         onClose={() => setAppointmentsDrawerOpen(false)}
         onCancelAppointment={handleCancelAppointment}
         onRescheduleAppointment={handleRescheduleAppointment}
         onNewBooking={() => openBooking()}
+        onOpenLogin={() => setLoginModalOpen(true)}
+        onLogout={handleLogout}
+      />
+
+      <LoginModal
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
+      <DoctorDashboardModal
+        isOpen={doctorDashboardOpen && session?.role === 'doctor'}
+        session={session?.role === 'doctor' ? session : null}
+        appointments={appointments}
+        questions={questions}
+        onClose={() => setDoctorDashboardOpen(false)}
+        onCancelAppointment={handleCancelAppointment}
+        onReplyQuestion={handleReplyQuestion}
+        onLogout={handleLogout}
       />
 
       <ToastPopup

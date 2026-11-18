@@ -1,19 +1,42 @@
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { AuthSession } from '../types/dental';
 import { ToothIcon } from './ToothIcon';
 
 interface NavbarProps {
   appointmentCount: number;
+  session: AuthSession | null;
   onOpenBooking: () => void;
   onOpenAppointments: () => void;
+  onOpenLogin: () => void;
+  onOpenDoctorPortal: () => void;
 }
 
 export function Navbar({
   appointmentCount,
+  session,
   onOpenBooking,
   onOpenAppointments,
+  onOpenLogin,
+  onOpenDoctorPortal,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const authLabel = !session
+    ? 'Login'
+    : session.role === 'doctor'
+      ? 'Doctor Portal'
+      : `Account (${session.name.split(' ')[0]})`;
+
+  const handleAuthAction = () => {
+    if (!session) {
+      onOpenLogin();
+    } else if (session.role === 'doctor') {
+      onOpenDoctorPortal();
+    } else {
+      onOpenAppointments();
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#091830]/95 backdrop-blur-md">
@@ -27,7 +50,7 @@ export function Navbar({
           <span>Dentora</span>
         </a>
 
-        {/* Zone 2: 4 concise single-line navigation links */}
+        {/* Zone 2: 5 concise single-line navigation links */}
         <nav
           aria-label="Primary Navigation"
           className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-200"
@@ -56,6 +79,13 @@ export function Navbar({
             className="whitespace-nowrap shrink-0 py-1 text-left hover:text-sky-300 hover:underline underline-offset-8 decoration-sky-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-sm cursor-pointer"
           >
             Appointments ({appointmentCount})
+          </button>
+          <button
+            type="button"
+            onClick={handleAuthAction}
+            className="whitespace-nowrap shrink-0 py-1 text-left text-sky-300 hover:text-white hover:underline underline-offset-8 decoration-sky-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-sm cursor-pointer"
+          >
+            {authLabel}
           </button>
         </nav>
 
@@ -113,6 +143,16 @@ export function Navbar({
             className="block w-full py-2 text-left text-base font-medium text-slate-200 hover:text-sky-300 cursor-pointer"
           >
             Appointments ({appointmentCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleAuthAction();
+            }}
+            className="block w-full py-2 text-left text-base font-medium text-sky-300 hover:text-white cursor-pointer"
+          >
+            {authLabel}
           </button>
           <button
             type="button"

@@ -104,7 +104,7 @@ export async function sendBookingConfirmationEmail(
   `.trim();
 
   try {
-    const response = await fetch('https://api.emailjs.com/api/v1/email/send', {
+    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

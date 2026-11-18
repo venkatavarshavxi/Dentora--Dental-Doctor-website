@@ -19,6 +19,7 @@ import {
 import { getSlotAvailability } from '../db/dentalStore';
 import {
   Appointment,
+  AuthSession,
   PaymentMethod,
   UrgencyLevel,
   VisitType,
@@ -32,6 +33,7 @@ import { PaymentGatewayStep } from './PaymentGatewayStep';
 
 interface BookingModalProps {
   isOpen: boolean;
+  session?: AuthSession | null;
   initialDoctorId?: string;
   initialTreatmentId?: string;
   existingAppointments: Appointment[];
@@ -59,6 +61,7 @@ const PHONE_10_DIGITS_REGEX = /^\d{10}$/;
 
 export function BookingModal({
   isOpen,
+  session,
   initialDoctorId,
   initialTreatmentId,
   existingAppointments,
@@ -91,6 +94,11 @@ export function BookingModal({
     if (isOpen) {
       if (initialDoctorId) setDoctorId(initialDoctorId);
       if (initialTreatmentId) setTreatmentId(initialTreatmentId);
+      if (session?.role === 'customer') {
+        setPatientName((prev) => prev || session.name);
+        setPatientEmail((prev) => prev || session.email);
+        setPatientPhone((prev) => prev || session.phone);
+      }
       setError('');
       setNameHint('');
       setPhoneHint('');
@@ -98,7 +106,7 @@ export function BookingModal({
       setConfirmedApt(null);
       setEmailFeedback(null);
     }
-  }, [isOpen, initialDoctorId, initialTreatmentId]);
+  }, [isOpen, initialDoctorId, initialTreatmentId, session]);
 
   useEffect(() => {
     if (!isOpen || step !== 'form') return;
