@@ -1,6 +1,6 @@
 import { ArrowUpRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { useState } from 'react';
-import { HERO_CLINIC_IMAGE, TREATMENTS } from '../data/seedData';
+import { DOCTORS, HERO_CLINIC_IMAGE, TREATMENTS } from '../data/seedData';
 import { Treatment, TreatmentCategory } from '../types/dental';
 
 interface TreatmentShowcaseProps {
@@ -41,7 +41,7 @@ export function TreatmentShowcase({
               className="mt-2 font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl"
               style={{ textWrap: 'balance' }}
             >
-              Transparent dental care with upfront time and pricing.
+              Precision dental care with upfront visit durations.
             </h2>
           </div>
 
@@ -126,10 +126,11 @@ export function TreatmentShowcase({
                 <div className="mt-6 flex items-center justify-between border-t border-slate-200/80 pt-4">
                   <div>
                     <p className="text-[11px] font-medium text-slate-500">
-                      Estimated range
+                      Lead specialist
                     </p>
-                    <p className="font-mono-num text-sm font-semibold text-slate-900">
-                      {treatment.priceRange}
+                    <p className="text-xs font-semibold text-slate-900">
+                      {DOCTORS.find((d) => d.id === treatment.recommendedDoctorId)?.name ||
+                        'Dentora Specialist'}
                     </p>
                   </div>
 
@@ -214,7 +215,7 @@ export function TreatmentShowcase({
                     100%
                   </p>
                   <p className="text-xs text-slate-500">
-                    Upfront treatment fees
+                    Digital 3D care plans
                   </p>
                 </div>
               </div>

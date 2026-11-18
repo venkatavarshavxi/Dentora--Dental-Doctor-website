@@ -4,10 +4,15 @@ import {
   CheckCircle2,
   Clock,
   MapPin,
+  MessageCircle,
   Phone,
   Stethoscope,
 } from 'lucide-react';
-import { DOCTORS, TREATMENTS } from '../data/seedData';
+import {
+  CLINIC_WHATSAPP_DISPLAY,
+  DOCTORS,
+  TREATMENTS,
+} from '../data/seedData';
 import { Appointment } from '../types/dental';
 import { formatReadableDate } from '../utils/clinicDates';
 import { ToothIcon } from './ToothIcon';
@@ -149,11 +154,9 @@ export function AppointmentSlipCard({ appointment }: AppointmentSlipCardProps) {
             <p className="text-sm font-bold text-slate-900">
               {treatment?.title || 'Dental Consultation'}
             </p>
-            {treatment?.priceRange && (
-              <p className="font-mono-num text-xs font-medium text-blue-700">
-                Est. {treatment.priceRange}
-              </p>
-            )}
+            <p className="font-mono-num text-xs font-medium text-blue-700">
+              Duration: {treatment?.duration || '45 min'}
+            </p>
           </div>
         </div>
 
@@ -170,10 +173,14 @@ export function AppointmentSlipCard({ appointment }: AppointmentSlipCardProps) {
 
           <div>
             <p className="text-[11px] font-semibold text-slate-500">
-              Phone Number
+              Phone &amp; WhatsApp
             </p>
             <p className="font-mono-num mt-0.5 font-semibold text-slate-900">
               {appointment.patientPhone}
+              {appointment.whatsappNumber &&
+              appointment.whatsappNumber !== appointment.patientPhone
+                ? ` · WA: ${appointment.whatsappNumber}`
+                : ' (WhatsApp)'}
             </p>
           </div>
 
@@ -204,25 +211,6 @@ export function AppointmentSlipCard({ appointment }: AppointmentSlipCardProps) {
               <span>{appointment.reminderOptIn ? 'Enabled' : 'Disabled'}</span>
             </p>
           </div>
-
-          <div className="sm:col-span-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-blue-100 bg-[#F4F8FD] px-3.5 py-2.5">
-            <div>
-              <p className="text-[11px] font-semibold text-slate-500">
-                Chair Reservation Fee
-              </p>
-              <p className="font-mono-num text-xs font-bold text-slate-900">
-                ₹{appointment.bookingFeeInr} · {appointment.paymentStatus}
-              </p>
-            </div>
-            <div className="sm:text-right">
-              <p className="text-[11px] text-slate-500">
-                Method: {appointment.paymentMethod}
-              </p>
-              <p className="font-mono-num text-[11px] font-semibold text-blue-700">
-                Receipt: {appointment.paymentRef}
-              </p>
-            </div>
-          </div>
         </div>
 
         {appointment.notes && (
@@ -241,6 +229,13 @@ export function AppointmentSlipCard({ appointment }: AppointmentSlipCardProps) {
           <p className="flex items-center gap-1.5 font-semibold text-slate-800">
             <MapPin className="h-3.5 w-3.5 text-blue-700 shrink-0" aria-hidden="true" />
             <span>420 Meridian Dental Plaza, Suite 300</span>
+          </p>
+          <p className="flex items-center gap-1.5 font-mono-num">
+            <MessageCircle
+              className="h-3.5 w-3.5 text-emerald-600 shrink-0"
+              aria-hidden="true"
+            />
+            <span>WhatsApp Desk: {CLINIC_WHATSAPP_DISPLAY}</span>
           </p>
           <p className="flex items-center gap-1.5 font-mono-num">
             <Phone className="h-3 w-3 text-slate-500 shrink-0" aria-hidden="true" />

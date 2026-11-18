@@ -31,8 +31,9 @@ export const WHITENING_CARE_IMAGE =
 export const ROOT_CANAL_IMAGE =
   '/src/assets/images/treatment_root_canal_care_1794910680942.jpg';
 
-export const BOOKING_FEE_INR = 500;
 export const MAX_SLOT_CAPACITY = 4;
+export const CLINIC_WHATSAPP_DIGITS = '919840012345';
+export const CLINIC_WHATSAPP_DISPLAY = '+91 98400 12345';
 
 export const DOCTORS: Doctor[] = [
   {
@@ -122,7 +123,6 @@ export const TREATMENTS: Treatment[] = [
     title: '3D Intraoral Scanning & Ceramic Crowns',
     category: 'Cosmetic',
     duration: '45 min',
-    priceRange: '₹6,500 – ₹14,000',
     summary:
       'Optical 3D tooth mapping eliminates messy putty impressions and crafts precision-milled zirconia crowns in a single visit.',
     imageUrl: DIGITAL_SCAN_IMAGE,
@@ -139,7 +139,6 @@ export const TREATMENTS: Treatment[] = [
     title: 'Guided Biofilm Cleaning & Exam',
     category: 'Preventive',
     duration: '35 min',
-    priceRange: '₹1,200 – ₹2,500',
     summary:
       'Gentle warm-water ultrasonic scaling, enamel polishing, and digital cavity screening for long-term gum health.',
     imageUrl: HERO_SMILE_IMAGE,
@@ -156,7 +155,6 @@ export const TREATMENTS: Treatment[] = [
     title: 'Guided Titanium Dental Implants',
     category: 'Implants & Ortho',
     duration: '60 min',
-    priceRange: '₹24,000 – ₹42,000',
     summary:
       'Computer-guided keyhole implant placement designed for rapid healing and lifelike chewing strength.',
     imageUrl: IMPLANT_CROWN_IMAGE,
@@ -173,7 +171,6 @@ export const TREATMENTS: Treatment[] = [
     title: 'Clear Invisible Aligners',
     category: 'Implants & Ortho',
     duration: '30 min consult',
-    priceRange: '₹45,000 – ₹95,000',
     summary:
       'Removable, BPA-free transparent aligner trays staged with digital tooth-movement previews before you start.',
     imageUrl: CLEAR_ALIGNERS_IMAGE,
@@ -190,7 +187,6 @@ export const TREATMENTS: Treatment[] = [
     title: 'Enamel-Safe Laser Whitening',
     category: 'Cosmetic',
     duration: '40 min',
-    priceRange: '₹5,500 – ₹9,500',
     summary:
       'pH-balanced clinical whitening gel paired with cold-LED activation to brighten teeth up to 6 shades with zero sensitivity.',
     imageUrl: WHITENING_CARE_IMAGE,
@@ -207,7 +203,6 @@ export const TREATMENTS: Treatment[] = [
     title: 'Single-Visit Root Canal Care',
     category: 'Preventive',
     duration: '50 min',
-    priceRange: '₹4,500 – ₹8,500',
     summary:
       'Microscope-assisted endodontic therapy under local comfort numbing to relieve deep toothache and preserve natural teeth.',
     imageUrl: ROOT_CANAL_IMAGE,
@@ -272,6 +267,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
     patientAge: 29,
     patientEmail: 'meera.k@example.com',
     patientPhone: '4158902314',
+    whatsappNumber: '4158902314',
     visitType: 'Returning Patient',
     urgency: 'Routine',
     reminderOptIn: true,
@@ -280,10 +276,6 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
     date: '2026-11-20',
     timeSlot: '10:30 AM',
     notes: 'Routine 6-month cleaning and enamel sensitivity check.',
-    bookingFeeInr: 500,
-    paymentMethod: 'UPI / QR',
-    paymentStatus: 'Paid (₹500)',
-    paymentRef: 'PAY-20410',
     status: 'Confirmed',
     createdAt: '2026-11-16',
   },
@@ -322,7 +314,7 @@ export const ACCEPTED_PLANS = [
   'Aetna Vital',
   'MetLife PDP Plus',
   'BlueCross Dental',
-  '0% EMI Monthly Plans',
+  'Direct Care Assistance',
 ];
 
 export const PRE_VISIT_FAQS: FaqItem[] = [
@@ -334,9 +326,9 @@ export const PRE_VISIT_FAQS: FaqItem[] = [
   },
   {
     id: 'faq-2',
-    question: 'Can I reschedule or cancel my appointment online?',
+    question: 'Can I reschedule or cancel my appointment?',
     answer:
-      'Yes. Open Appointments from the top bar to view your saved booking, pick a new date and time with Reschedule, or cancel at zero fee.',
+      'Yes. Open Appointments from the top bar to view your booking slip and reschedule to an open slot, or message our clinic desk on WhatsApp (+91 98400 12345) to request a cancellation.',
   },
   {
     id: 'faq-3',

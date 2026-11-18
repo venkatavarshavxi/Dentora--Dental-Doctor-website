@@ -1,4 +1,4 @@
-import { DOCTORS, TREATMENTS } from '../data/seedData';
+import { CLINIC_WHATSAPP_DISPLAY, DOCTORS, TREATMENTS } from '../data/seedData';
 import { Appointment } from '../types/dental';
 import { formatReadableDate } from './clinicDates';
 
@@ -29,12 +29,12 @@ export function buildConfirmationEmailContent(apt: Appointment): {
     `Specialist        : ${doctor?.name || 'Dentora Specialist'} (${doctor?.role || ''})`,
     `Treatment         : ${treatment?.title || 'Consultation'}`,
     `Visit Type        : ${apt.visitType} · ${apt.urgency}`,
-    `Booking Fee       : ₹${apt.bookingFeeInr} (${apt.paymentStatus} · ${apt.paymentMethod})`,
-    `Payment Ref       : ${apt.paymentRef}`,
+    `WhatsApp Number   : ${apt.whatsappNumber || apt.patientPhone}`,
     apt.notes ? `Clinical Notes    : ${apt.notes}` : '',
     '',
     'Clinic Address    : 420 Meridian Dental Plaza, Suite 300',
     'Clinic Hours      : Mon – Sat · 9:00 AM – 6:30 PM (Closed Sundays)',
+    `Clinic WhatsApp   : ${CLINIC_WHATSAPP_DISPLAY}`,
     'Helpline          : +1 (415) 890-4400',
     '',
     'Please arrive 10 minutes prior to your chair time.',
@@ -89,16 +89,15 @@ export async function sendBookingConfirmationEmail(
       </div>
       <div style="padding:18px 22px;font-size:13px;line-height:1.6;">
         <p style="margin:0 0 8px;"><strong>Patient:</strong> ${apt.patientName} (Age ${apt.patientAge}) · ${apt.patientPhone}</p>
+        <p style="margin:0 0 8px;"><strong>WhatsApp:</strong> ${apt.whatsappNumber || apt.patientPhone}</p>
         <p style="margin:0 0 8px;"><strong>Specialist:</strong> ${doctor?.name || 'Dentora Specialist'} (${doctor?.role || ''})</p>
         <p style="margin:0 0 8px;"><strong>Treatment:</strong> ${treatment?.title || 'Dental Consultation'} (${treatment?.duration || '45 min'})</p>
         <p style="margin:0 0 8px;"><strong>Visit Type:</strong> ${apt.visitType} · ${apt.urgency}</p>
-        <p style="margin:0 0 8px;"><strong>Booking Fee:</strong> ₹${apt.bookingFeeInr} · ${apt.paymentStatus} (${apt.paymentMethod})</p>
-        <p style="margin:0 0 8px;"><strong>Payment Receipt:</strong> ${apt.paymentRef}</p>
         ${apt.notes ? `<p style="margin:0 0 8px;"><strong>Notes:</strong> ${apt.notes}</p>` : ''}
       </div>
       <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:12px 22px;font-size:11px;color:#475569;">
         420 Meridian Dental Plaza, Suite 300 · Mon–Sat 9:00 AM – 6:30 PM (Closed Sundays)<br />
-        Helpline: +1 (415) 890-4400
+        WhatsApp: ${CLINIC_WHATSAPP_DISPLAY} · Helpline: +1 (415) 890-4400
       </div>
     </div>
   `.trim();
@@ -132,11 +131,8 @@ export async function sendBookingConfirmationEmail(
           visit_type: apt.visitType,
           urgency: apt.urgency,
           patient_phone: apt.patientPhone,
+          whatsapp_number: apt.whatsappNumber || apt.patientPhone,
           clinic_notes: apt.notes || 'None',
-          booking_fee: `₹${apt.bookingFeeInr}`,
-          payment_status: apt.paymentStatus,
-          payment_method: apt.paymentMethod,
-          payment_ref: apt.paymentRef,
           slip_html: slipHtml,
           message: body,
         },

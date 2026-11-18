@@ -186,8 +186,9 @@ export function DoctorDashboardModal({
                           </span>
                         </p>
                         <p className="font-mono-num mt-1 text-[11px] text-slate-500">
-                          Phone: {apt.patientPhone} · Email: {apt.patientEmail} ·{' '}
-                          {apt.paymentStatus}
+                          Phone: {apt.patientPhone} · WhatsApp:{' '}
+                          {apt.whatsappNumber || apt.patientPhone} · Email:{' '}
+                          {apt.patientEmail}
                         </p>
                         {apt.notes && (
                           <p className="mt-1 text-xs text-slate-600">

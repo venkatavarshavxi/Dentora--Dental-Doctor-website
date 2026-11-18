@@ -386,24 +386,11 @@ export function AskDentistSection({
                           {item.answer}
                         </p>
                       </div>
-                    ) : replyingToId === item.id ? (
+                    ) : session?.role === 'doctor' && replyingToId === item.id ? (
                       <div className="mt-4 space-y-3 border-t border-white/10 pt-4">
-                        <div className="flex items-center justify-between gap-2">
-                          <label className="text-xs font-semibold text-sky-200">
-                            Replying Specialist
-                          </label>
-                          <select
-                            value={replyDoctorId}
-                            onChange={(e) => setReplyDoctorId(e.target.value)}
-                            className="rounded-lg border border-white/20 bg-[#122E58] px-3 py-1.5 text-xs text-white"
-                          >
-                            {DOCTORS.map((doc) => (
-                              <option key={doc.id} value={doc.id}>
-                                {doc.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                        <p className="text-xs font-semibold text-sky-200">
+                          Replying as {session.name} ({session.roleTitle})
+                        </p>
                         <textarea
                           rows={3}
                           value={replyText}
@@ -439,20 +426,23 @@ export function AskDentistSection({
                     ) : (
                       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-3">
                         <p className="text-xs text-slate-300">
-                          Queued for specialist review.
+                          Queued for dental doctor review.
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setReplyingToId(item.id);
-                            setReplyText('');
-                            setReplyError('');
-                          }}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 hover:text-white cursor-pointer"
-                        >
-                          <Stethoscope className="h-3.5 w-3.5" aria-hidden="true" />
-                          Specialist Reply
-                        </button>
+                        {session?.role === 'doctor' && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReplyingToId(item.id);
+                              setReplyDoctorId(session.doctorId);
+                              setReplyText('');
+                              setReplyError('');
+                            }}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 hover:text-white cursor-pointer"
+                          >
+                            <Stethoscope className="h-3.5 w-3.5" aria-hidden="true" />
+                            Specialist Reply
+                          </button>
+                        )}
                       </div>
                     )}
                   </article>

@@ -79,11 +79,11 @@ export function TreatmentDetailModal({
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-blue-100 pt-5">
           <div>
             <p className="text-xs text-slate-500">
-              Estimated fee · Lead specialist
+              Lead specialist · Visit duration
             </p>
             <p className="mt-0.5 text-sm font-semibold text-slate-900">
-              <span className="font-mono-num">{treatment.priceRange}</span>
-              {recommendedDoctor ? ` · ${recommendedDoctor.name}` : ''}
+              {recommendedDoctor ? recommendedDoctor.name : 'Dentora Specialist'} ·{' '}
+              <span className="font-mono-num">{treatment.duration}</span>
             </p>
           </div>
 

@@ -99,6 +99,7 @@ export default function App() {
     patientAge: number;
     patientEmail: string;
     patientPhone: string;
+    whatsappNumber: string;
     visitType: VisitType;
     urgency: UrgencyLevel;
     reminderOptIn: boolean;
@@ -107,8 +108,6 @@ export default function App() {
     date: string;
     timeSlot: string;
     notes: string;
-    paymentMethod: 'UPI / QR' | 'Card' | 'Pay at Clinic';
-    paymentRef?: string;
   }) => {
     const result = saveAppointment(input);
     if (result.ok) {

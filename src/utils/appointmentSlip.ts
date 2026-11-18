@@ -1,4 +1,4 @@
-import { DOCTORS, TREATMENTS } from '../data/seedData';
+import { CLINIC_WHATSAPP_DISPLAY, DOCTORS, TREATMENTS } from '../data/seedData';
 import { Appointment } from '../types/dental';
 import { formatReadableDate } from './clinicDates';
 
@@ -238,7 +238,7 @@ export function downloadAppointmentSlip(apt: Appointment) {
         <div>
           <div class="section-label">Scheduled Procedure</div>
           <div class="primary-text">${escapeHtml(tr?.title || 'Dental Consultation')}</div>
-          <div class="secondary-text">Est. Fee: ${escapeHtml(tr?.priceRange || 'Confirmed at clinic')}</div>
+          <div class="secondary-text">Duration: ${escapeHtml(tr?.duration || '45 min')}</div>
         </div>
       </div>
 
@@ -248,8 +248,8 @@ export function downloadAppointmentSlip(apt: Appointment) {
           <div class="primary-text">${escapeHtml(apt.patientName)} (Age ${apt.patientAge})</div>
         </div>
         <div>
-          <div class="section-label">Contact Phone</div>
-          <div class="primary-text">${escapeHtml(apt.patientPhone)}</div>
+          <div class="section-label">Phone &amp; WhatsApp</div>
+          <div class="primary-text">${escapeHtml(apt.patientPhone)}${apt.whatsappNumber && apt.whatsappNumber !== apt.patientPhone ? ` / WA: ${escapeHtml(apt.whatsappNumber)}` : ''}</div>
         </div>
         <div>
           <div class="section-label">Email Address</div>
@@ -258,16 +258,6 @@ export function downloadAppointmentSlip(apt: Appointment) {
         <div>
           <div class="section-label">Visit Type &amp; Priority</div>
           <div class="secondary-text" style="font-size:13px;color:#0f172a;font-weight:600;margin-top:4px;">${escapeHtml(apt.visitType)} · ${escapeHtml(apt.urgency)}</div>
-        </div>
-        <div style="grid-column: 1 / -1; background:#f4f8fd; border:1px solid #dbeafe; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
-          <div>
-            <div class="section-label">Chair Reservation Fee</div>
-            <div style="font-size:13px;color:#0f172a;font-weight:700;margin-top:2px;">₹${apt.bookingFeeInr} · ${escapeHtml(apt.paymentStatus)}</div>
-          </div>
-          <div style="text-align:right;">
-            <div class="secondary-text" style="margin-top:0;">Method: ${escapeHtml(apt.paymentMethod)}</div>
-            <div style="font-family:ui-monospace,monospace;font-size:11px;font-weight:700;color:#1d4ed8;margin-top:2px;">Receipt: ${escapeHtml(apt.paymentRef)}</div>
-          </div>
         </div>
       </div>
 
@@ -283,7 +273,7 @@ export function downloadAppointmentSlip(apt: Appointment) {
         <strong>Dentora Dental Studio</strong><br />
         420 Meridian Dental Plaza, Suite 300<br />
         Mon – Sat · 9:00 AM – 6:30 PM (Closed Sundays)<br />
-        Helpline: +1 (415) 890-4400
+        WhatsApp: ${escapeHtml(CLINIC_WHATSAPP_DISPLAY)} · Helpline: +1 (415) 890-4400
       </div>
       <div class="barcode-wrap">
         <svg width="144" height="32" viewBox="0 0 ${totalWidth} 32" aria-hidden="true">${barcodeRects}</svg>

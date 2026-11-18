@@ -1,3 +1,6 @@
+import { MessageCircle } from 'lucide-react';
+import { CLINIC_WHATSAPP_DISPLAY } from '../data/seedData';
+import { buildClinicWhatsAppUrl } from '../utils/whatsappSlip';
 import { ToothIcon } from './ToothIcon';
 
 interface FooterProps {
@@ -15,15 +18,15 @@ export function Footer({ onBookVisit }: FooterProps) {
               <span>Dentora</span>
             </span>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-slate-300">
-              Precision preventive, cosmetic, and implant dentistry with clear
-              pricing and direct specialist guidance.
+              Precision preventive, cosmetic, and implant dentistry with
+              transparent care plans and direct specialist guidance.
             </p>
           </div>
 
           <div className="md:col-span-4 space-y-2 text-sm">
-            <p className="font-semibold text-white">Clinic Hours</p>
+            <p className="font-semibold text-white">Clinic Hours &amp; Desk</p>
             <p className="font-mono-num text-xs text-sky-300">
-              Mon – Sat · 9:00 AM – 6:30 PM
+              Mon – Sat · 9:00 AM – 6:30 PM (Closed Sundays)
             </p>
             <p className="text-xs text-slate-400">
               420 Meridian Dental Plaza, Suite 300
@@ -31,6 +34,15 @@ export function Footer({ onBookVisit }: FooterProps) {
             <p className="font-mono-num text-xs text-slate-400">
               care@dentorastudio.com · +1 (415) 890-4400
             </p>
+            <a
+              href={buildClinicWhatsAppUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-mono-num text-xs font-semibold text-emerald-300 hover:text-emerald-200 transition-colors"
+            >
+              <MessageCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>WhatsApp: {CLINIC_WHATSAPP_DISPLAY}</span>
+            </a>
           </div>
 
           <div className="md:col-span-3 flex flex-col items-start gap-2.5 text-sm">

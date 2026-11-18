@@ -290,7 +290,7 @@ export function AppointmentsDrawer({
                     · {apt.patientPhone}
                   </p>
                   <p className="font-mono-num mt-1 text-[11px] font-medium text-slate-600">
-                    Booking Fee: {apt.paymentStatus} ({apt.paymentMethod})
+                    WhatsApp: {apt.whatsappNumber || apt.patientPhone}
                   </p>
 
                   {isRescheduling ? (
@@ -377,13 +377,15 @@ export function AppointmentsDrawer({
                             />
                             Reschedule
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => onCancelAppointment(apt.id)}
-                            className="font-semibold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
-                          >
-                            Cancel
-                          </button>
+                          {session?.role === 'doctor' && (
+                            <button
+                              type="button"
+                              onClick={() => onCancelAppointment(apt.id)}
+                              className="font-semibold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

@@ -1,5 +1,4 @@
 import {
-  BOOKING_FEE_INR,
   DOCTORS,
   INITIAL_APPOINTMENTS,
   INITIAL_QUESTIONS,
@@ -8,7 +7,6 @@ import {
 import {
   Appointment,
   DentalQuestion,
-  PaymentMethod,
   QuestionTopic,
 } from '../types/dental';
 import { isSundayDate } from '../utils/clinicDates';
@@ -66,10 +64,7 @@ export function getSlotAvailability(
 function normalizeAppointment(apt: Appointment): Appointment {
   return {
     ...apt,
-    bookingFeeInr: apt.bookingFeeInr ?? BOOKING_FEE_INR,
-    paymentMethod: apt.paymentMethod ?? 'UPI / QR',
-    paymentStatus: apt.paymentStatus ?? 'Paid (₹500)',
-    paymentRef: apt.paymentRef ?? `PAY-${apt.id.replace(/\D/g, '') || '10001'}`,
+    whatsappNumber: apt.whatsappNumber || apt.patientPhone,
   };
 }
 
@@ -93,15 +88,7 @@ export function loadAppointments(): Appointment[] {
 }
 
 export function saveAppointment(
-  newApt: Omit<
-    Appointment,
-    | 'id'
-    | 'status'
-    | 'createdAt'
-    | 'bookingFeeInr'
-    | 'paymentStatus'
-    | 'paymentRef'
-  > & { paymentMethod: PaymentMethod; paymentRef?: string },
+  newApt: Omit<Appointment, 'id' | 'status' | 'createdAt'>,
 ): { ok: true; appointment: Appointment; appointments: Appointment[] } | { ok: false; error: string } {
   if (isSundayDate(newApt.date)) {
     return {
@@ -135,17 +122,11 @@ export function saveAppointment(
   }
 
   const shortSuffix = Date.now().toString().slice(-5);
-  const isPayAtClinic = newApt.paymentMethod === 'Pay at Clinic';
-  const customRef = newApt.paymentRef?.trim();
 
   const appointment: Appointment = {
     ...newApt,
+    whatsappNumber: newApt.whatsappNumber || newApt.patientPhone,
     id: `apt-${shortSuffix}`,
-    bookingFeeInr: BOOKING_FEE_INR,
-    paymentMethod: newApt.paymentMethod,
-    paymentStatus: isPayAtClinic ? 'Pay ₹500 at Clinic' : 'Paid (₹500)',
-    paymentRef:
-      customRef || (isPayAtClinic ? `DESK-${shortSuffix}` : `PAY-${shortSuffix}`),
     status: 'Confirmed',
     createdAt: new Date().toISOString().slice(0, 10),
   };

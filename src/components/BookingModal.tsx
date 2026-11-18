@@ -1,16 +1,13 @@
 import {
   CheckCircle2,
-  CreditCard,
   Download,
-  IndianRupee,
+  MessageCircle,
   Printer,
-  QrCode,
-  Store,
   X,
 } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import {
-  BOOKING_FEE_INR,
+  CLINIC_WHATSAPP_DISPLAY,
   DOCTORS,
   MAX_SLOT_CAPACITY,
   TIME_SLOTS,
@@ -20,16 +17,18 @@ import { getSlotAvailability } from '../db/dentalStore';
 import {
   Appointment,
   AuthSession,
-  PaymentMethod,
   UrgencyLevel,
   VisitType,
 } from '../types/dental';
 import { downloadAppointmentSlip } from '../utils/appointmentSlip';
 import { getNextOpenClinicDate, isSundayDate } from '../utils/clinicDates';
 import { sendBookingConfirmationEmail } from '../utils/emailConfirmation';
+import {
+  buildClinicWhatsAppUrl,
+  buildPatientWhatsAppUrl,
+} from '../utils/whatsappSlip';
 import { AppointmentSlipCard } from './AppointmentSlipCard';
 import { ClinicDatePicker } from './ClinicDatePicker';
-import { PaymentGatewayStep } from './PaymentGatewayStep';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -43,6 +42,7 @@ interface BookingModalProps {
     patientAge: number;
     patientEmail: string;
     patientPhone: string;
+    whatsappNumber: string;
     visitType: VisitType;
     urgency: UrgencyLevel;
     reminderOptIn: boolean;
@@ -51,8 +51,6 @@ interface BookingModalProps {
     date: string;
     timeSlot: string;
     notes: string;
-    paymentMethod: PaymentMethod;
-    paymentRef?: string;
   }) => { ok: true; appointment: Appointment } | { ok: false; error: string };
 }
 
@@ -82,10 +80,12 @@ export function BookingModal({
   const [patientEmail, setPatientEmail] = useState('');
   const [patientPhone, setPatientPhone] = useState('');
   const [phoneHint, setPhoneHint] = useState('');
+  const [sameAsPhone, setSameAsPhone] = useState(true);
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [whatsappHint, setWhatsappHint] = useState('');
   const [reminderOptIn, setReminderOptIn] = useState(true);
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('UPI / QR');
-  const [step, setStep] = useState<'form' | 'payment' | 'confirmed'>('form');
+  const [step, setStep] = useState<'form' | 'confirmed'>('form');
   const [error, setError] = useState('');
   const [confirmedApt, setConfirmedApt] = useState<Appointment | null>(null);
   const [emailFeedback, setEmailFeedback] = useState<string | null>(null);
@@ -98,10 +98,12 @@ export function BookingModal({
         setPatientName((prev) => prev || session.name);
         setPatientEmail((prev) => prev || session.email);
         setPatientPhone((prev) => prev || session.phone);
+        setWhatsappNumber((prev) => prev || session.phone);
       }
       setError('');
       setNameHint('');
       setPhoneHint('');
+      setWhatsappHint('');
       setStep('form');
       setConfirmedApt(null);
       setEmailFeedback(null);
@@ -161,48 +163,21 @@ export function BookingModal({
       setPhoneHint('');
     }
     setPatientPhone(digitsOnly);
+    if (sameAsPhone) {
+      setWhatsappNumber(digitsOnly);
+    }
   };
 
-  const finalizeBooking = (customPaymentRef?: string) => {
-    const numericAge = Number(patientAge);
-    const result = onConfirmBooking({
-      patientName: patientName.trim(),
-      patientAge: numericAge,
-      patientEmail: patientEmail.trim(),
-      patientPhone,
-      visitType,
-      urgency,
-      reminderOptIn,
-      doctorId,
-      treatmentId,
-      date,
-      timeSlot,
-      notes: notes.trim(),
-      paymentMethod,
-      paymentRef: customPaymentRef,
-    });
-
-    if (!result.ok) {
-      setError(result.error);
-      return;
+  const handleWhatsappChange = (rawValue: string) => {
+    const digitsOnly = rawValue.replace(/\D/g, '').slice(0, 10);
+    if (rawValue !== digitsOnly && rawValue.length <= 10) {
+      setWhatsappHint('Only numbers are accepted (alphabets are blocked).');
+    } else if (rawValue.replace(/\D/g, '').length > 10) {
+      setWhatsappHint('WhatsApp number is limited to 10 digits.');
+    } else {
+      setWhatsappHint('');
     }
-
-    setConfirmedApt(result.appointment);
-    setStep('confirmed');
-    setEmailFeedback(`Sending confirmation email to ${result.appointment.patientEmail}...`);
-
-    // Silently dispatch confirmation email directly to the patient when EmailJS is configured
-    void sendBookingConfirmationEmail(result.appointment).then((dispatch) => {
-      if (dispatch.mode === 'emailjs_sent') {
-        setEmailFeedback(dispatch.message);
-      } else if (dispatch.mode === 'emailjs_failed') {
-        setEmailFeedback(dispatch.message);
-      } else {
-        setEmailFeedback(
-          'Your chair slot is reserved. Print or download your Dentora pass below.',
-        );
-      }
-    });
+    setWhatsappNumber(digitsOnly);
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -225,6 +200,14 @@ export function BookingModal({
     if (!PHONE_10_DIGITS_REGEX.test(patientPhone)) {
       setError(
         'Please enter a valid 10-digit phone number (numbers only, no alphabets).',
+      );
+      return;
+    }
+
+    const effectiveWhatsapp = sameAsPhone ? patientPhone : whatsappNumber;
+    if (!PHONE_10_DIGITS_REGEX.test(effectiveWhatsapp)) {
+      setError(
+        'Please enter a valid 10-digit WhatsApp number so we can prepare your WhatsApp slip.',
       );
       return;
     }
@@ -268,12 +251,42 @@ export function BookingModal({
       return;
     }
 
-    if (paymentMethod === 'UPI / QR' || paymentMethod === 'Card') {
-      setStep('payment');
+    const result = onConfirmBooking({
+      patientName: patientName.trim(),
+      patientAge: numericAge,
+      patientEmail: patientEmail.trim(),
+      patientPhone,
+      whatsappNumber: effectiveWhatsapp,
+      visitType,
+      urgency,
+      reminderOptIn,
+      doctorId,
+      treatmentId,
+      date,
+      timeSlot,
+      notes: notes.trim(),
+    });
+
+    if (!result.ok) {
+      setError(result.error);
       return;
     }
 
-    finalizeBooking();
+    setConfirmedApt(result.appointment);
+    setStep('confirmed');
+    setEmailFeedback(`Sending confirmation email to ${result.appointment.patientEmail}...`);
+
+    void sendBookingConfirmationEmail(result.appointment).then((dispatch) => {
+      if (dispatch.mode === 'emailjs_sent') {
+        setEmailFeedback(dispatch.message);
+      } else if (dispatch.mode === 'emailjs_failed') {
+        setEmailFeedback(dispatch.message);
+      } else {
+        setEmailFeedback(
+          'Your chair slot is reserved. Send your slip to WhatsApp, print, or download below.',
+        );
+      }
+    });
   };
 
   return (
@@ -308,14 +321,44 @@ export function BookingModal({
                 </h3>
                 <p className="text-xs text-slate-600 sm:text-sm">
                   {emailFeedback ||
-                    'Your chair slot is reserved. Print or download your Dentora pass below.'}
+                    'Your chair slot is reserved. Send your pass to WhatsApp or download below.'}
                 </p>
               </div>
             </div>
 
             <AppointmentSlipCard appointment={confirmedApt} />
 
-            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 print:hidden">
+            {/* WhatsApp Instant Slip Delivery */}
+            <div className="mt-4 flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-emerald-950">
+                  WhatsApp Slip Ready ({confirmedApt.whatsappNumber})
+                </p>
+                <p className="mt-0.5 text-[11px] text-emerald-800">
+                  Send your full slip to WhatsApp, or{' '}
+                  <a
+                    href={buildClinicWhatsAppUrl(confirmedApt)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold underline underline-offset-2 hover:text-emerald-950"
+                  >
+                    chat with Clinic Desk ({CLINIC_WHATSAPP_DISPLAY})
+                  </a>
+                  .
+                </p>
+              </div>
+              <a
+                href={buildPatientWhatsAppUrl(confirmedApt)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors whitespace-nowrap"
+              >
+                <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                <span>Send Slip on WhatsApp</span>
+              </a>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3 print:hidden">
               <button
                 type="button"
                 onClick={() => window.print()}
@@ -341,23 +384,6 @@ export function BookingModal({
               </button>
             </div>
           </div>
-        ) : step === 'payment' &&
-          (paymentMethod === 'UPI / QR' || paymentMethod === 'Card') ? (
-          <PaymentGatewayStep
-            patientName={patientName.trim()}
-            patientEmail={patientEmail.trim()}
-            doctorId={doctorId}
-            treatmentId={treatmentId}
-            date={date}
-            timeSlot={timeSlot}
-            paymentMethod={paymentMethod}
-            error={error}
-            onBack={() => {
-              setError('');
-              setStep('form');
-            }}
-            onConfirmPaid={(ref) => finalizeBooking(ref)}
-          />
         ) : (
           <div>
             <p className="text-xs font-semibold text-blue-700">
@@ -642,6 +668,55 @@ export function BookingModal({
                 </div>
               </div>
 
+              {/* WhatsApp Number */}
+              <div className="rounded-xl border border-emerald-200 bg-white p-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label
+                    htmlFor="book-whatsapp"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-800"
+                  >
+                    <MessageCircle
+                      className="h-3.5 w-3.5 text-emerald-600"
+                      aria-hidden="true"
+                    />
+                    <span>WhatsApp Number (for Appointment Slip)</span>
+                  </label>
+                  <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sameAsPhone}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setSameAsPhone(checked);
+                        if (checked) setWhatsappNumber(patientPhone);
+                      }}
+                      className="h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600"
+                    />
+                    <span>Same as phone number</span>
+                  </label>
+                </div>
+
+                {!sameAsPhone && (
+                  <div className="mt-2.5">
+                    <input
+                      id="book-whatsapp"
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={whatsappNumber}
+                      onChange={(e) => handleWhatsappChange(e.target.value)}
+                      placeholder="10-digit WhatsApp number"
+                      className="font-mono-num w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                    />
+                    {whatsappHint && (
+                      <p className="mt-1 text-[11px] font-medium text-amber-700">
+                        {whatsappHint}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label
                   htmlFor="book-notes"
@@ -669,64 +744,6 @@ export function BookingModal({
                 <span>Send me a 24-hour pre-visit appointment reminder</span>
               </label>
 
-              {/* ₹500 Chair Reservation Fee & Payment Option */}
-              <div className="rounded-xl border border-blue-200 bg-white p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-900">
-                      Chair Reservation Fee (All Bookings)
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-slate-500">
-                      Adjusted against your final treatment bill at the clinic
-                    </p>
-                  </div>
-                  <span className="font-mono-num inline-flex items-center text-lg font-bold text-blue-700 shrink-0">
-                    <IndianRupee className="h-4 w-4" aria-hidden="true" />
-                    {BOOKING_FEE_INR}
-                  </span>
-                </div>
-
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {(
-                    [
-                      { id: 'UPI / QR', label: 'UPI / QR', icon: QrCode },
-                      { id: 'Card', label: 'Card', icon: CreditCard },
-                      {
-                        id: 'Pay at Clinic',
-                        label: 'Pay at Clinic',
-                        icon: Store,
-                      },
-                    ] as const
-                  ).map(({ id, label, icon: Icon }) => {
-                    const selected = paymentMethod === id;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => setPaymentMethod(id)}
-                        className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                          selected
-                            ? 'border-blue-700 bg-blue-700 text-white'
-                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 hover:text-blue-700'
-                        }`}
-                      >
-                        <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                        <span>{label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <p className="mt-2.5 text-[11px] text-slate-600">
-                  {paymentMethod === 'UPI / QR' &&
-                    'Clicking continue opens the Dentora UPI QR scanner to pay ₹500.'}
-                  {paymentMethod === 'Card' &&
-                    'Clicking continue opens the ₹500 card confirmation checkout.'}
-                  {paymentMethod === 'Pay at Clinic' &&
-                    'No advance payment needed — pay ₹500 at Dentora reception upon arrival.'}
-                </p>
-              </div>
-
               {error && (
                 <p
                   role="alert"
@@ -740,11 +757,7 @@ export function BookingModal({
                 type="submit"
                 className="w-full rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 active:scale-[0.99] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
               >
-                {paymentMethod === 'UPI / QR'
-                  ? `Continue to UPI QR Payment (₹${BOOKING_FEE_INR})`
-                  : paymentMethod === 'Card'
-                    ? `Continue to Card Payment (₹${BOOKING_FEE_INR})`
-                    : `Confirm Booking (Pay ₹${BOOKING_FEE_INR} at Clinic)`}
+                Confirm Appointment &amp; Generate Slip
               </button>
             </form>
           </div>

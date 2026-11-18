@@ -59,7 +59,6 @@
       "title": "3D Intraoral Scanning & Ceramic Crowns",
       "category": "Cosmetic",
       "duration": "45 min",
-      "priceRange": "₹6,500 – ₹14,000",
       "summary": "Optical 3D tooth mapping eliminates messy putty impressions and crafts precision-milled zirconia crowns in a single visit.",
       "featured": true,
       "imageUrl": "/src/assets/images/treatment_digital_scan_1794908435533.jpg",
@@ -76,7 +75,6 @@
       "title": "Guided Biofilm Cleaning & Exam",
       "category": "Preventive",
       "duration": "35 min",
-      "priceRange": "₹1,200 – ₹2,500",
       "summary": "Gentle warm-water ultrasonic scaling, enamel polishing, and digital cavity screening for long-term gum health.",
       "steps": [
         "Digital low-dose X-ray screening and gum pocket charting",
@@ -91,7 +89,6 @@
       "title": "Guided Titanium Dental Implants",
       "category": "Implants & Ortho",
       "duration": "60 min",
-      "priceRange": "₹24,000 – ₹42,000",
       "summary": "Computer-guided keyhole implant placement designed for rapid healing and lifelike chewing strength.",
       "steps": [
         "3D CBCT bone density mapping and custom surgical stent",
@@ -106,7 +103,6 @@
       "title": "Clear Invisible Aligners",
       "category": "Implants & Ortho",
       "duration": "30 min consult",
-      "priceRange": "₹45,000 – ₹95,000",
       "summary": "Removable, BPA-free transparent aligner trays staged with digital tooth-movement previews before you start.",
       "steps": [
         "3D digital arch scan and week-by-week smile simulation",
@@ -121,7 +117,6 @@
       "title": "Single-Visit Root Canal Care",
       "category": "Preventive",
       "duration": "50 min",
-      "priceRange": "₹4,500 – ₹8,500",
       "summary": "Microscope-assisted endodontic therapy under local comfort numbing to relieve deep toothache and preserve natural teeth.",
       "steps": [
         "Targeted local anesthesia and rubber-dam isolation",
@@ -136,7 +131,6 @@
       "title": "Enamel-Safe Laser Whitening",
       "category": "Cosmetic",
       "duration": "40 min",
-      "priceRange": "₹5,500 – ₹9,500",
       "summary": "pH-balanced clinical whitening gel paired with cold-LED activation to brighten teeth up to 6 shades with zero sensitivity.",
       "steps": [
         "Pre-whitening shade assessment and gingival barrier protection",
@@ -152,6 +146,7 @@
       "patientName": "Meera Krishnan",
       "patientEmail": "meera.k@example.com",
       "patientPhone": "+1 (415) 890-2314",
+      "whatsappNumber": "4158902314",
       "doctorId": "doc-ananya",
       "treatmentId": "tr-hygiene",
       "date": "2026-11-20",
