@@ -104,23 +104,31 @@ export function loginCustomer(
 ): { ok: true; session: AuthSession } | { ok: false; error: string } {
   const customers = loadCustomers();
   const normalizedEmail = email.trim().toLowerCase();
-  const match = customers.find(
-    (c) => c.email.toLowerCase() === normalizedEmail && c.password === password,
+  const accountByEmail = customers.find(
+    (c) => c.email.toLowerCase() === normalizedEmail,
   );
 
-  if (!match) {
+  if (!accountByEmail) {
     return {
       ok: false,
-      error: 'Invalid patient email or password.',
+      error:
+        'No patient account found for this email. Switch to "Create Account" above to register.',
+    };
+  }
+
+  if (accountByEmail.password !== password) {
+    return {
+      ok: false,
+      error: 'Incorrect password for this email address.',
     };
   }
 
   const session: AuthSession = {
     role: 'customer',
-    id: match.id,
-    name: match.name,
-    email: match.email,
-    phone: match.phone,
+    id: accountByEmail.id,
+    name: accountByEmail.name,
+    email: accountByEmail.email,
+    phone: accountByEmail.phone,
   };
   saveSession(session);
   return { ok: true, session };

@@ -46,7 +46,6 @@ export function AppointmentsDrawer({
   const [statusFilter, setStatusFilter] = useState<
     'All' | 'Confirmed' | 'Cancelled'
   >('All');
-  const [scopeFilter, setScopeFilter] = useState<'mine' | 'all'>('mine');
   const [searchTerm, setSearchTerm] = useState('');
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
   const [newDate, setNewDate] = useState('');
@@ -58,10 +57,11 @@ export function AppointmentsDrawer({
 
   const filteredAppointments = appointments.filter((apt) => {
     const matchesScope =
-      session?.role === 'customer' && scopeFilter === 'mine'
-        ? apt.patientEmail.toLowerCase() === session.email.toLowerCase() ||
-          apt.patientPhone === session.phone
-        : true;
+      session?.role === 'customer'
+        ? apt.patientEmail.toLowerCase() === session.email.toLowerCase()
+        : session?.role === 'doctor'
+          ? apt.doctorId === session.doctorId
+          : apt.id !== 'apt-2041';
     const matchesStatus =
       statusFilter === 'All' || apt.status === statusFilter;
     const query = searchTerm.trim().toLowerCase();
@@ -140,19 +140,31 @@ export function AppointmentsDrawer({
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={onLogout}
-                className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-red-300 hover:text-red-600 cursor-pointer"
-              >
-                <LogOut className="h-3 w-3" aria-hidden="true" />
-                <span>Sign Out</span>
-              </button>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenLogin();
+                  }}
+                  className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 hover:bg-blue-50 cursor-pointer"
+                >
+                  <span>Switch</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-red-300 hover:text-red-600 cursor-pointer"
+                >
+                  <LogOut className="h-3 w-3" aria-hidden="true" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-between gap-2">
               <p className="text-[11px] text-slate-600">
-                Sign in to filter your personal visits &amp; slips
+                Sign in to view your saved visits &amp; slips
               </p>
               <button
                 type="button"
@@ -171,32 +183,6 @@ export function AppointmentsDrawer({
 
         {/* Search & Status Filter Bar */}
         <div className="border-b border-slate-200 bg-white px-6 py-3.5 space-y-3">
-          {session?.role === 'customer' && (
-            <div className="grid grid-cols-2 gap-1 rounded-lg bg-blue-50 p-1">
-              <button
-                type="button"
-                onClick={() => setScopeFilter('mine')}
-                className={`rounded-md py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
-                  scopeFilter === 'mine'
-                    ? 'bg-blue-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                My Visits
-              </button>
-              <button
-                type="button"
-                onClick={() => setScopeFilter('all')}
-                className={`rounded-md py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
-                  scopeFilter === 'all'
-                    ? 'bg-blue-700 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                All Clinic
-              </button>
-            </div>
-          )}
 
           <div className="relative">
             <Search

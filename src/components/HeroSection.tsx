@@ -1,8 +1,10 @@
 import { ArrowRight, Stethoscope } from 'lucide-react';
 import { useState } from 'react';
 import { HERO_DENTIST_PATIENT_IMAGE } from '../data/seedData';
+import { AuthSession } from '../types/dental';
 
 interface HeroSectionProps {
+  session?: AuthSession | null;
   onBookVisit: () => void;
 }
 
@@ -29,7 +31,7 @@ const CLINIC_METRICS = [
   },
 ];
 
-export function HeroSection({ onBookVisit }: HeroSectionProps) {
+export function HeroSection({ session, onBookVisit }: HeroSectionProps) {
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -87,7 +89,9 @@ export function HeroSection({ onBookVisit }: HeroSectionProps) {
                 href="#ask-sec"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/[0.06] px-5 py-3.5 text-sm font-semibold text-sky-200 hover:border-sky-300/60 hover:bg-white/[0.12] hover:text-white transition-all whitespace-nowrap shrink-0"
               >
-                Ask a Dentist Online
+                {session?.role === 'doctor'
+                  ? 'Answer Patient Q&A'
+                  : 'Ask a Dentist Online'}
               </a>
             </div>
           </div>

@@ -44,6 +44,12 @@ export function LoginModal({
   useEffect(() => {
     if (isOpen) {
       setRoleTab(initialRole);
+      setCustomerMode('signin');
+      setName('');
+      setPhone('');
+      setEmail('');
+      setPassword('');
+      setDocPassword('');
       setError('');
     }
   }, [isOpen, initialRole]);
@@ -174,23 +180,34 @@ export function LoginModal({
 
         {roleTab === 'customer' ? (
           <form onSubmit={handleCustomerSubmit} className="mt-5 space-y-4" noValidate>
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3 text-xs">
-              <span className="font-semibold text-slate-700">
-                {customerMode === 'signin'
-                  ? 'Patient Account Sign In'
-                  : 'Create Patient Account'}
-              </span>
+            <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1 text-xs">
               <button
                 type="button"
                 onClick={() => {
-                  setCustomerMode((m) => (m === 'signin' ? 'signup' : 'signin'));
+                  setCustomerMode('signin');
                   setError('');
                 }}
-                className="font-semibold text-blue-700 hover:underline cursor-pointer"
+                className={`rounded-md py-1.5 font-semibold transition-colors cursor-pointer ${
+                  customerMode === 'signin'
+                    ? 'bg-white text-blue-700 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
               >
-                {customerMode === 'signin'
-                  ? 'New patient? Register'
-                  : 'Already registered? Sign In'}
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomerMode('signup');
+                  setError('');
+                }}
+                className={`rounded-md py-1.5 font-semibold transition-colors cursor-pointer ${
+                  customerMode === 'signup'
+                    ? 'bg-white text-blue-700 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Create Account
               </button>
             </div>
 

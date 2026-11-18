@@ -1,6 +1,7 @@
 import {
   CheckCircle2,
   Download,
+  Lock,
   MessageCircle,
   Printer,
   X,
@@ -8,6 +9,7 @@ import {
 import { FormEvent, useEffect, useState } from 'react';
 import {
   CLINIC_WHATSAPP_DISPLAY,
+  DOCTOR_PRIMARY_TREATMENT,
   DOCTORS,
   MAX_SLOT_CAPACITY,
   TIME_SLOTS,
@@ -66,9 +68,12 @@ export function BookingModal({
   onClose,
   onConfirmBooking,
 }: BookingModalProps) {
-  const [doctorId, setDoctorId] = useState(initialDoctorId || DOCTORS[0].id);
+  const initialDoc = initialDoctorId || DOCTORS[0].id;
+  const [doctorId, setDoctorId] = useState(initialDoc);
   const [treatmentId, setTreatmentId] = useState(
-    initialTreatmentId || TREATMENTS[0].id,
+    initialTreatmentId ||
+      DOCTOR_PRIMARY_TREATMENT[initialDoc] ||
+      TREATMENTS[0].id,
   );
   const [date, setDate] = useState(() => getNextOpenClinicDate());
   const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[0]);
@@ -91,14 +96,33 @@ export function BookingModal({
   const [emailFeedback, setEmailFeedback] = useState<string | null>(null);
 
   useEffect(() => {
+    if (session?.role === 'customer') {
+      setPatientName(session.name);
+      setPatientEmail(session.email);
+      setPatientPhone(session.phone);
+      setWhatsappNumber(session.phone);
+    } else {
+      setPatientName('');
+      setPatientEmail('');
+      setPatientPhone('');
+      setWhatsappNumber('');
+    }
+  }, [session]);
+
+  useEffect(() => {
     if (isOpen) {
-      if (initialDoctorId) setDoctorId(initialDoctorId);
-      if (initialTreatmentId) setTreatmentId(initialTreatmentId);
+      const targetDoc = initialDoctorId || DOCTORS[0].id;
+      const targetTr =
+        initialTreatmentId ||
+        DOCTOR_PRIMARY_TREATMENT[targetDoc] ||
+        TREATMENTS[0].id;
+      setDoctorId(targetDoc);
+      setTreatmentId(targetTr);
       if (session?.role === 'customer') {
-        setPatientName((prev) => prev || session.name);
-        setPatientEmail((prev) => prev || session.email);
-        setPatientPhone((prev) => prev || session.phone);
-        setWhatsappNumber((prev) => prev || session.phone);
+        setPatientName(session.name);
+        setPatientEmail(session.email);
+        setPatientPhone(session.phone);
+        setWhatsappNumber(session.phone);
       }
       setError('');
       setNameHint('');
@@ -461,7 +485,14 @@ export function BookingModal({
                   <select
                     id="book-doctor"
                     value={doctorId}
-                    onChange={(e) => setDoctorId(e.target.value)}
+                    onChange={(e) => {
+                      const nextDoctorId = e.target.value;
+                      setDoctorId(nextDoctorId);
+                      setTreatmentId(
+                        DOCTOR_PRIMARY_TREATMENT[nextDoctorId] ||
+                          TREATMENTS[0].id,
+                      );
+                    }}
                     className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
                   >
                     {DOCTORS.map((doc) => (
@@ -473,24 +504,32 @@ export function BookingModal({
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="book-treatment"
-                    className="block text-xs font-semibold text-slate-700"
-                  >
-                    Treatment
-                  </label>
-                  <select
-                    id="book-treatment"
-                    value={treatmentId}
-                    onChange={(e) => setTreatmentId(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
-                  >
-                    {TREATMENTS.map((tr) => (
-                      <option key={tr.id} value={tr.id}>
-                        {tr.title}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between">
+                    <span className="block text-xs font-semibold text-slate-700">
+                      Fixed Treatment
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-700">
+                      <Lock className="h-3 w-3" aria-hidden="true" />
+                      <span>Specialist-locked</span>
+                    </span>
+                  </div>
+                  {(() => {
+                    const selectedDoc = DOCTORS.find((d) => d.id === doctorId);
+                    const fixedTr = TREATMENTS.find((t) => t.id === treatmentId);
+                    return (
+                      <div
+                        aria-live="polite"
+                        className="mt-1.5 rounded-lg border border-blue-200 bg-blue-50/70 px-3 py-2 text-slate-900"
+                      >
+                        <p className="truncate text-sm font-semibold text-slate-900">
+                          {fixedTr?.title || selectedDoc?.role || 'Dental Care'}
+                        </p>
+                        <p className="truncate text-[11px] text-slate-600">
+                          {selectedDoc?.role} · {fixedTr?.duration || '45 min'}
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 

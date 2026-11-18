@@ -56,10 +56,15 @@ export function AskDentistSection({
 
   useEffect(() => {
     if (session?.role === 'customer') {
-      setPatientName((prev) => prev || session.name);
-      setPatientEmail((prev) => prev || session.email);
+      setPatientName(session.name);
+      setPatientEmail(session.email);
     } else if (session?.role === 'doctor') {
       setReplyDoctorId(session.doctorId);
+      setPatientName('');
+      setPatientEmail('');
+    } else {
+      setPatientName('');
+      setPatientEmail('');
     }
   }, [session]);
 
@@ -134,6 +139,8 @@ export function AskDentistSection({
     return matchesTopic && matchesSearch;
   });
 
+  const isDoctor = session?.role === 'doctor';
+
   return (
     <section
       id="ask-sec"
@@ -142,23 +149,27 @@ export function AskDentistSection({
       <div className="mx-auto max-w-6xl px-6">
         <div className="max-w-2xl">
           <p className="text-xs font-medium tracking-wide text-sky-300">
-            Ask a Dentist Online
+            {isDoctor ? 'Doctor Q&A Review' : 'Ask a Dentist Online'}
           </p>
           <h2
             className="mt-2 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl"
             style={{ textWrap: 'balance' }}
           >
-            Have a dental concern? Get direct clinical guidance.
+            {isDoctor
+              ? 'Answer pending patient dental questions.'
+              : 'Have a dental concern? Get direct clinical guidance.'}
           </h2>
           <p className="mt-3 text-base text-slate-200">
-            Submit your question below or browse verified answers from our
-            specialists before booking an in-clinic exam.
+            {isDoctor
+              ? 'Review patient symptoms submitted in the portal and publish clinical answers directly under your specialist profile.'
+              : 'Submit your question below or browse verified answers from our specialists before booking an in-clinic exam.'}
           </p>
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
-          {/* Left Column: Crisp White Form Card */}
-          <div className="rounded-2xl border border-blue-200/30 bg-white p-6 text-slate-900 shadow-xl sm:p-7 lg:col-span-5">
+          {/* Left Column: Crisp White Form Card (Patients & Guests only — hidden in Doctor Portal) */}
+          {!isDoctor && (
+            <div className="rounded-2xl border border-blue-200/30 bg-white p-6 text-slate-900 shadow-xl sm:p-7 lg:col-span-5">
             <div className="flex items-center gap-2.5">
               <MessageSquarePlus
                 className="h-5 w-5 text-blue-700"
@@ -295,10 +306,11 @@ export function AskDentistSection({
                 Post Question to Specialists
               </button>
             </form>
-          </div>
+            </div>
+          )}
 
           {/* Right Column: Search & Verified Specialist Q&A Feed */}
-          <div className="space-y-5 lg:col-span-7">
+          <div className={`space-y-5 ${isDoctor ? 'lg:col-span-12' : 'lg:col-span-7'}`}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative flex-1">
                 <Search

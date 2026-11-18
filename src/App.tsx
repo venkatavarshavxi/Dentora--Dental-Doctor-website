@@ -67,9 +67,16 @@ export default function App() {
     return () => window.clearTimeout(timer);
   }, [toastMessage]);
 
-  const confirmedCount = appointments.filter(
-    (item) => item.status === 'Confirmed',
-  ).length;
+  const confirmedCount = appointments.filter((item) => {
+    if (item.status !== 'Confirmed') return false;
+    if (session?.role === 'customer') {
+      return item.patientEmail.toLowerCase() === session.email.toLowerCase();
+    }
+    if (session?.role === 'doctor') {
+      return item.doctorId === session.doctorId;
+    }
+    return item.id !== 'apt-2041';
+  }).length;
 
   const openBooking = (doctorId?: string, treatmentId?: string) => {
     setPreselectedDoctorId(doctorId);
@@ -183,7 +190,7 @@ export default function App() {
       />
 
       <main>
-        <HeroSection onBookVisit={() => openBooking()} />
+        <HeroSection session={session} onBookVisit={() => openBooking()} />
 
         <TreatmentShowcase
           onSelectTreatment={(treatment) => setSelectedTreatment(treatment)}

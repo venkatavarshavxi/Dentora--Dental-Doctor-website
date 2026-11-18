@@ -213,7 +213,61 @@ export const TREATMENTS: Treatment[] = [
     ],
     recommendedDoctorId: 'doc-priya',
   },
+  {
+    id: 'tr-pediatric',
+    indexLabel: '07',
+    title: 'Pediatric Dentistry & Preventive Care',
+    category: 'Preventive',
+    duration: '40 min',
+    summary:
+      'Gentle children’s dental exams, painless pit-and-fissure sealants, fluoride protection, and anxiety-free preventive care.',
+    steps: [
+      'Child-friendly dental checkup and cavity risk screening',
+      'Painless pit-and-fissure molar sealants and fluoride varnish',
+      'Brushing & oral habit guidance for growing smiles',
+    ],
+    recommendedDoctorId: 'doc-rohan',
+  },
+  {
+    id: 'tr-periodontal',
+    indexLabel: '08',
+    title: 'Laser Gum & Periodontal Care',
+    category: 'Preventive',
+    duration: '45 min',
+    summary:
+      'Laser-assisted gum contouring, gentle pocket therapy, and targeted care for bleeding or receding gums.',
+    steps: [
+      'Periodontal pocket depth charting and digital gum assessment',
+      'Ultrasonic root debridement and laser disinfection',
+      'Tissue healing support and tailored gum maintenance plan',
+    ],
+    recommendedDoctorId: 'doc-meera',
+  },
+  {
+    id: 'tr-maxillofacial',
+    indexLabel: '09',
+    title: 'Maxillofacial & TMJ Oral Surgery',
+    category: 'Implants & Ortho',
+    duration: '60 min',
+    summary:
+      'Specialized evaluation and surgical care for impacted wisdom teeth, jaw joint (TMJ) disorders, and facial oral surgery.',
+    steps: [
+      'Low-radiation 3D CBCT jaw and nerve pathway scan',
+      'Targeted local comfort numbing and minimally invasive surgery',
+      'Post-surgical recovery guidance and follow-up review',
+    ],
+    recommendedDoctorId: 'doc-kabir',
+  },
 ];
+
+export const DOCTOR_PRIMARY_TREATMENT: Record<string, string> = {
+  'doc-ananya': 'tr-digital-scan',
+  'doc-thomas': 'tr-implants',
+  'doc-priya': 'tr-aligners',
+  'doc-rohan': 'tr-pediatric',
+  'doc-meera': 'tr-periodontal',
+  'doc-kabir': 'tr-maxillofacial',
+};
 
 export const INITIAL_QUESTIONS: DentalQuestion[] = [
   {

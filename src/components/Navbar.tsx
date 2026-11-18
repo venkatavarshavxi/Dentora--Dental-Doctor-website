@@ -71,7 +71,7 @@ export function Navbar({
             href="#ask-sec"
             className="whitespace-nowrap shrink-0 py-1 hover:text-sky-300 hover:underline underline-offset-8 decoration-sky-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-sm"
           >
-            Ask a Dentist
+            {session?.role === 'doctor' ? 'Patient Q&A' : 'Ask a Dentist'}
           </a>
           <button
             type="button"
@@ -132,7 +132,7 @@ export function Navbar({
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-base font-medium text-slate-200 hover:text-sky-300"
           >
-            Ask a Dentist
+            {session?.role === 'doctor' ? 'Patient Q&A' : 'Ask a Dentist'}
           </a>
           <button
             type="button"
