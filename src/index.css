@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #f0f5fb;
+    color: #0f172a;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono-num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Slow, graceful glimmer slide hover effect ONLY for the Hero Section headline */
+@keyframes slowGlimmerSlide {
+  0% {
+    background-position: 130% 0%;
+  }
+  100% {
+    background-position: -130% 0%;
+  }
+}
+
+.headline-shimmer {
+  background-image: linear-gradient(
+    108deg,
+    #ffffff 0%,
+    #ffffff 38%,
+    #bae6fd 47%,
+    #ffffff 50%,
+    #7dd3fc 53%,
+    #ffffff 62%,
+    #ffffff 100%
+  );
+  background-size: 260% 100%;
+  background-position: 130% 0%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: filter 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+}
+
+.headline-shimmer:hover {
+  animation: slowGlimmerSlide 3.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 14px rgba(125, 211, 252, 0.28));
+}
+
+/* Clean, steady pop-out card elevation on hover (no shimmer) */
+.card-pop {
+  position: relative;
+  transition:
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.card-pop:hover,
+.card-pop:focus-within {
+  transform: translateY(-7px) scale(1.015);
+  border-color: #2563eb;
+  box-shadow:
+    0 22px 44px -12px rgba(29, 78, 216, 0.18),
+    0 10px 20px -8px rgba(15, 23, 42, 0.1);
+  z-index: 10;
+}
+
+.card-pop:active {
+  transform: translateY(-3px) scale(1.005);
+}
+
+/* Clean elevation on dark navy surfaces (no shimmer) */
+.card-pop-dark {
+  position: relative;
+  transition:
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.card-pop-dark:hover,
+.card-pop-dark:focus-within {
+  transform: translateY(-6px) scale(1.012);
+  border-color: #60a5fa;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px -12px rgba(3, 10, 24, 0.55);
+  z-index: 10;
+}
+
+/* Smooth spring entrance for modals and popups */
+@keyframes modalPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popup-enter {
+  animation: modalPopIn 190ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headline-shimmer:hover {
+    animation: none;
+    filter: none;
+  }
+  .card-pop,
+  .card-pop-dark {
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .card-pop:hover,
+  .card-pop:focus-within,
+  .card-pop:active,
+  .card-pop-dark:hover,
+  .card-pop-dark:focus-within {
+    transform: none;
+  }
+  .popup-enter {
+    animation: none;
+  }
+}

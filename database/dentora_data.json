@@ -1,0 +1,202 @@
+{
+  "doctors": [
+    {
+      "id": "doc-ananya",
+      "name": "Dr. Ananya Sharma",
+      "role": "Cosmetic & Restorative Dentist",
+      "credentials": "BDS, MDS (Prosthodontics)",
+      "experienceYears": 12,
+      "rating": "4.9",
+      "reviewCount": 318,
+      "availability": "Mon – Fri · 9:00 AM – 5:30 PM",
+      "bio": "Specializes in ultra-thin porcelain veneers, biocompatible ceramic crowns, and minimally invasive smile restorations.",
+      "imageUrl": "/src/assets/images/doctor_elena_vance_1794908434385.jpg",
+      "specialties": [
+        "Porcelain Veneers",
+        "Smile Design",
+        "Laser Whitening"
+      ]
+    },
+    {
+      "id": "doc-thomas",
+      "name": "Dr. Thomas Alistair",
+      "role": "Implantologist & Oral Surgeon",
+      "credentials": "DDS, Fellow ICOI",
+      "experienceYears": 15,
+      "rating": "4.9",
+      "reviewCount": 402,
+      "availability": "Tue – Sat · 10:00 AM – 6:30 PM",
+      "bio": "Focuses on 3D CBCT-guided dental implants, painless wisdom tooth extractions, and full-arch restorative rehabilitation.",
+      "imageUrl": "/src/assets/images/doctor_marcus_chen_1794908434839.jpg",
+      "specialties": [
+        "3D Guided Implants",
+        "Wisdom Tooth Surgery",
+        "Bone Grafting"
+      ]
+    },
+    {
+      "id": "doc-priya",
+      "name": "Dr. Priya Sharma",
+      "role": "Orthodontist & Endodontist",
+      "credentials": "BDS, MDS (Orthodontics)",
+      "experienceYears": 10,
+      "rating": "5.0",
+      "reviewCount": 274,
+      "availability": "Mon – Sat · 9:30 AM – 6:00 PM",
+      "bio": "Combines digital clear aligner planning with microscopic single-sitting root canal therapy for calm, predictable care.",
+      "imageUrl": "/src/assets/images/doctor_priya_nair_1794908436899.jpg",
+      "specialties": [
+        "Clear Aligners",
+        "Microscopic Root Canal",
+        "Pediatric Care"
+      ]
+    }
+  ],
+  "treatments": [
+    {
+      "id": "tr-digital-scan",
+      "indexLabel": "01",
+      "title": "3D Intraoral Scanning & Ceramic Crowns",
+      "category": "Cosmetic",
+      "duration": "45 min",
+      "priceRange": "$480 – $890",
+      "summary": "Optical 3D tooth mapping eliminates messy putty impressions and crafts precision-milled zirconia crowns in a single visit.",
+      "featured": true,
+      "imageUrl": "/src/assets/images/treatment_digital_scan_1794908435533.jpg",
+      "steps": [
+        "High-resolution 3D optical intraoral scan (2 minutes, radiation-free)",
+        "Digital bite alignment & natural shade matching under daylight",
+        "CAD/CAM milled ceramic restoration bonded under isolation"
+      ],
+      "recommendedDoctorId": "doc-ananya"
+    },
+    {
+      "id": "tr-hygiene",
+      "indexLabel": "02",
+      "title": "Guided Biofilm Cleaning & Exam",
+      "category": "Preventive",
+      "duration": "35 min",
+      "priceRange": "$110 – $160",
+      "summary": "Gentle warm-water ultrasonic scaling, enamel polishing, and digital cavity screening for long-term gum health.",
+      "steps": [
+        "Digital low-dose X-ray screening and gum pocket charting",
+        "Warm-water air-polishing to remove plaque without scraping enamel",
+        "Desensitizing fluoride varnish application"
+      ],
+      "recommendedDoctorId": "doc-ananya"
+    },
+    {
+      "id": "tr-implants",
+      "indexLabel": "03",
+      "title": "Guided Titanium Dental Implants",
+      "category": "Implants & Ortho",
+      "duration": "60 min",
+      "priceRange": "$1,450 – $2,200",
+      "summary": "Computer-guided keyhole implant placement designed for rapid healing and lifelike chewing strength.",
+      "steps": [
+        "3D CBCT bone density mapping and custom surgical stent",
+        "Minimally invasive keyhole titanium fixture placement",
+        "Custom-shaded porcelain crown attachment after integration"
+      ],
+      "recommendedDoctorId": "doc-thomas"
+    },
+    {
+      "id": "tr-aligners",
+      "indexLabel": "04",
+      "title": "Clear Invisible Aligners",
+      "category": "Implants & Ortho",
+      "duration": "30 min consult",
+      "priceRange": "$2,100 – $3,600",
+      "summary": "Removable, BPA-free transparent aligner trays staged with digital tooth-movement previews before you start.",
+      "steps": [
+        "3D digital arch scan and week-by-week smile simulation",
+        "Custom series of precision-trimmed clear aligner trays",
+        "Bi-monthly progress checks and final retention plan"
+      ],
+      "recommendedDoctorId": "doc-priya"
+    },
+    {
+      "id": "tr-root-canal",
+      "indexLabel": "05",
+      "title": "Single-Visit Root Canal Care",
+      "category": "Preventive",
+      "duration": "50 min",
+      "priceRange": "$320 – $540",
+      "summary": "Microscope-assisted endodontic therapy under local comfort numbing to relieve deep toothache and preserve natural teeth.",
+      "steps": [
+        "Targeted local anesthesia and rubber-dam isolation",
+        "Microscopic rotary canal cleaning and ultrasonic disinfection",
+        "Biocompatible sealing and protective restoration"
+      ],
+      "recommendedDoctorId": "doc-priya"
+    },
+    {
+      "id": "tr-whitening",
+      "indexLabel": "06",
+      "title": "Enamel-Safe Laser Whitening",
+      "category": "Cosmetic",
+      "duration": "40 min",
+      "priceRange": "$260 – $380",
+      "summary": "pH-balanced clinical whitening gel paired with cold-LED activation to brighten teeth up to 6 shades with zero sensitivity.",
+      "steps": [
+        "Pre-whitening shade assessment and gingival barrier protection",
+        "Three 10-minute cold-LED activated desensitizing gel cycles",
+        "Post-care nano-hydroxyapatite remineralizing serum"
+      ],
+      "recommendedDoctorId": "doc-ananya"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "apt-2041",
+      "patientName": "Meera Krishnan",
+      "patientEmail": "meera.k@example.com",
+      "patientPhone": "+1 (415) 890-2314",
+      "doctorId": "doc-ananya",
+      "treatmentId": "tr-hygiene",
+      "date": "2026-11-20",
+      "timeSlot": "10:30 AM",
+      "notes": "Routine 6-month cleaning and enamel sensitivity check.",
+      "status": "Confirmed",
+      "createdAt": "2026-11-16"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-101",
+      "patientName": "Rohan Mehta",
+      "patientEmail": "rohan.m@example.com",
+      "topic": "Toothache & Sensitivity",
+      "question": "I feel a sharp twinge in my lower right molar whenever I drink cold water, but the pain fades within 5 seconds. Should I get it checked?",
+      "createdAt": "2026-11-14",
+      "answeredByDoctorName": "Dr. Priya Sharma",
+      "answeredByRole": "Orthodontist & Endodontist",
+      "answer": "Short sensitivity lasting under 10 seconds usually points to exposed dentin, a worn filling edge, or an early cavity rather than deep nerve inflammation. Avoid abrasive whitening pastes for now, use a potassium-nitrate toothpaste, and schedule a quick exam with an X-ray so we can seal it before it reaches the nerve.",
+      "status": "Answered"
+    },
+    {
+      "id": "q-102",
+      "patientName": "Claire Bennett",
+      "patientEmail": "claire.b@example.com",
+      "topic": "Implants & Crowns",
+      "question": "How long does it take to heal after a single titanium dental implant, and can I return to office work the next day?",
+      "createdAt": "2026-11-12",
+      "answeredByDoctorName": "Dr. Thomas Alistair",
+      "answeredByRole": "Implantologist & Oral Surgeon",
+      "answer": "With 3D guided keyhole placement, most patients feel only mild soreness for 24–48 hours and comfortably return to desk work the next morning. Full bone integration takes 8–12 weeks before we attach your final porcelain crown, and we provide a discreet temporary tooth if it is in your smile zone.",
+      "status": "Answered"
+    },
+    {
+      "id": "q-103",
+      "patientName": "Siddharth Rao",
+      "patientEmail": "sid.rao@example.com",
+      "topic": "Braces & Aligners",
+      "question": "I have minor crowding on my lower front teeth. Are clear aligners effective for adults in their 30s?",
+      "createdAt": "2026-11-09",
+      "answeredByDoctorName": "Dr. Priya Sharma",
+      "answeredByRole": "Orthodontist & Endodontist",
+      "answer": "Yes—age is never a barrier as long as your gums and supporting bone are healthy. Mild to moderate lower-arch crowding typically responds in 5 to 8 months with clear aligners worn 20–22 hours daily.",
+      "status": "Answered"
+    }
+  ]
+}
