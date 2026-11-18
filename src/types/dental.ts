@@ -11,6 +11,10 @@ export type VisitType = 'New Patient' | 'Returning Patient';
 
 export type UrgencyLevel = 'Routine' | 'Urgent Pain';
 
+export type PaymentMethod = 'UPI / QR' | 'Card' | 'Pay at Clinic';
+
+export type PaymentStatus = 'Paid (₹500)' | 'Pay ₹500 at Clinic';
+
 export interface Doctor {
   id: string;
   name: string;
@@ -65,6 +69,10 @@ export interface Appointment {
   date: string;
   timeSlot: string;
   notes: string;
+  bookingFeeInr: number;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  paymentRef: string;
   status: 'Confirmed' | 'Cancelled';
   createdAt: string;
 }

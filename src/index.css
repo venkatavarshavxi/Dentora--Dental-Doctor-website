@@ -142,3 +142,24 @@
     animation: none;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .printable-slip,
+  .printable-slip * {
+    visibility: visible !important;
+  }
+  .printable-slip {
+    position: fixed !important;
+    left: 50% !important;
+    top: 24px !important;
+    transform: translateX(-50%) !important;
+    width: min(640px, 95vw) !important;
+    box-shadow: none !important;
+    border-color: #cbd5e1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

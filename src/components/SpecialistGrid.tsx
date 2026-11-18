@@ -1,5 +1,5 @@
 import { ArrowUpRight, CalendarCheck2, Star, UserRound } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DOCTORS, PATIENT_TESTIMONIALS } from '../data/seedData';
 import { Doctor } from '../types/dental';
 
@@ -15,6 +15,29 @@ export function SpecialistGrid({
   const [failedPortraits, setFailedPortraits] = useState<
     Record<string, boolean>
   >({});
+  const [portraitsVisible, setPortraitsVisible] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setPortraitsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setPortraitsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section
@@ -38,42 +61,63 @@ export function SpecialistGrid({
           </p>
         </div>
 
-        {/* 3 Specialist Cards with Clean Pop-Out Lift */}
-        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {DOCTORS.map((doctor) => (
-            <article
-              key={doctor.id}
-              onClick={() => onSelectDoctor(doctor)}
-              className="card-pop group cursor-pointer flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white"
-            >
-              <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
-                {!failedPortraits[doctor.id] ? (
-                  <img
-                    src={doctor.imageUrl}
-                    alt={`${doctor.name}, ${doctor.role}`}
-                    referrerPolicy="no-referrer"
-                    onError={() =>
-                      setFailedPortraits((prev) => ({
-                        ...prev,
-                        [doctor.id]: true,
-                      }))
-                    }
-                    className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
-                  />
-                ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-blue-50 p-6 text-center">
-                    <UserRound
-                      className="h-12 w-12 text-blue-700"
-                      aria-hidden="true"
-                    />
-                    <p className="mt-2 font-display text-base font-semibold text-slate-800">
-                      {doctor.name}
-                    </p>
-                  </div>
-                )}
-              </div>
+        {/* 6 Specialist Cards with Smooth Portrait Slide-In & Clean Pop-Out Lift */}
+        <div
+          ref={gridRef}
+          className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3"
+        >
+          {DOCTORS.map((doctor, index) => {
+            const colIndex = index % 3;
+            const slideStartTransform =
+              colIndex === 0
+                ? '-translate-x-10 translate-y-4 scale-95 opacity-0'
+                : colIndex === 1
+                  ? 'translate-y-8 scale-95 opacity-0'
+                  : 'translate-x-10 translate-y-4 scale-95 opacity-0';
 
-              <div className="flex flex-1 flex-col justify-between p-6">
+            return (
+              <article
+                key={doctor.id}
+                onClick={() => onSelectDoctor(doctor)}
+                className="card-pop group cursor-pointer flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white"
+              >
+                <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
+                  {!failedPortraits[doctor.id] ? (
+                    <div
+                      style={{ transitionDelay: `${index * 95}ms` }}
+                      className={`h-full w-full transform-gpu transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transform-none motion-reduce:opacity-100 ${
+                        portraitsVisible
+                          ? 'translate-x-0 translate-y-0 scale-100 opacity-100'
+                          : slideStartTransform
+                      }`}
+                    >
+                      <img
+                        src={doctor.imageUrl}
+                        alt={`${doctor.name}, ${doctor.role}`}
+                        referrerPolicy="no-referrer"
+                        onError={() =>
+                          setFailedPortraits((prev) => ({
+                            ...prev,
+                            [doctor.id]: true,
+                          }))
+                        }
+                        className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-slate-100 to-blue-50 p-6 text-center">
+                      <UserRound
+                        className="h-12 w-12 text-blue-700"
+                        aria-hidden="true"
+                      />
+                      <p className="mt-2 font-display text-base font-semibold text-slate-800">
+                        {doctor.name}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-1 flex-col justify-between p-6">
                 <div>
                   <div className="flex items-center gap-2 text-xs text-slate-500">
                     <span>{doctor.credentials}</span>
@@ -145,7 +189,8 @@ export function SpecialistGrid({
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
 
         {/* Calm, Steady Verified Patient Experiences (No hover animation or shimmer) */}

@@ -1,8 +1,10 @@
-import { Calendar, CalendarClock, Download, Plus, Search, X } from 'lucide-react';
+import { Calendar, CalendarClock, FileText, Plus, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { DOCTORS, TIME_SLOTS, TREATMENTS } from '../data/seedData';
+import { getSlotAvailability } from '../db/dentalStore';
 import { Appointment } from '../types/dental';
-import { downloadAppointmentSlip } from './BookingModal';
+import { AppointmentSlipModal } from './AppointmentSlipModal';
+import { ClinicDatePicker } from './ClinicDatePicker';
 
 interface AppointmentsDrawerProps {
   isOpen: boolean;
@@ -33,10 +35,9 @@ export function AppointmentsDrawer({
   const [newDate, setNewDate] = useState('');
   const [newSlot, setNewSlot] = useState(TIME_SLOTS[0]);
   const [rescheduleError, setRescheduleError] = useState('');
+  const [viewingSlipApt, setViewingSlipApt] = useState<Appointment | null>(null);
 
   if (!isOpen) return null;
-
-  const todayStr = new Date().toISOString().slice(0, 10);
 
   const filteredAppointments = appointments.filter((apt) => {
     const matchesStatus =
@@ -195,29 +196,43 @@ export function AppointmentsDrawer({
                     </span>{' '}
                     · {apt.patientPhone}
                   </p>
+                  <p className="font-mono-num mt-1 text-[11px] font-medium text-slate-600">
+                    Booking Fee: {apt.paymentStatus} ({apt.paymentMethod})
+                  </p>
 
                   {isRescheduling ? (
                     <div className="mt-3 space-y-2.5 border-t border-slate-100 pt-3">
                       <p className="text-xs font-semibold text-slate-800">
-                        Pick New Date &amp; Time
+                        Pick New Date &amp; Time (Mon–Sat)
                       </p>
-                      <input
-                        type="date"
-                        min={todayStr}
+                      <ClinicDatePicker
                         value={newDate}
-                        onChange={(e) => setNewDate(e.target.value)}
-                        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-900"
+                        onChange={setNewDate}
+                        compact
                       />
                       <select
                         value={newSlot}
                         onChange={(e) => setNewSlot(e.target.value)}
                         className="font-mono-num w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-900"
                       >
-                        {TIME_SLOTS.map((slot) => (
-                          <option key={slot} value={slot}>
-                            {slot}
-                          </option>
-                        ))}
+                        {TIME_SLOTS.map((slot) => {
+                          const availability = getSlotAvailability(
+                            appointments,
+                            apt.doctorId,
+                            newDate,
+                            slot,
+                            apt.id,
+                          );
+                          return (
+                            <option
+                              key={slot}
+                              value={slot}
+                              disabled={availability.isUnavailable}
+                            >
+                              {slot} — {availability.statusLabel}
+                            </option>
+                          );
+                        })}
                       </select>
                       {rescheduleError && (
                         <p className="text-[11px] font-medium text-red-600">
@@ -251,12 +266,12 @@ export function AppointmentsDrawer({
                         <div className="flex items-center gap-3">
                           <button
                             type="button"
-                            onClick={() => downloadAppointmentSlip(apt)}
-                            title="Download Slip"
-                            className="inline-flex items-center gap-1 font-semibold text-slate-600 hover:text-blue-700 cursor-pointer"
+                            onClick={() => setViewingSlipApt(apt)}
+                            title="View Styled Appointment Slip"
+                            className="inline-flex items-center gap-1 font-semibold text-slate-700 hover:text-blue-700 cursor-pointer"
                           >
-                            <Download className="h-3.5 w-3.5" aria-hidden="true" />
-                            Slip
+                            <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                            View Slip
                           </button>
                           <button
                             type="button"
@@ -300,6 +315,11 @@ export function AppointmentsDrawer({
           </button>
         </div>
       </div>
+
+      <AppointmentSlipModal
+        appointment={viewingSlipApt}
+        onClose={() => setViewingSlipApt(null)}
+      />
     </div>
   );
 }

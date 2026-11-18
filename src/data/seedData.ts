@@ -31,6 +31,9 @@ export const WHITENING_CARE_IMAGE =
 export const ROOT_CANAL_IMAGE =
   '/src/assets/images/treatment_root_canal_care_1794910680942.jpg';
 
+export const BOOKING_FEE_INR = 500;
+export const MAX_SLOT_CAPACITY = 4;
+
 export const DOCTORS: Doctor[] = [
   {
     id: 'doc-ananya',
@@ -71,6 +74,45 @@ export const DOCTORS: Doctor[] = [
     imageUrl: '/src/assets/images/doctor_priya_nair_1794908436899.jpg',
     specialties: ['Clear Aligners', 'Microscopic Root Canal', 'Pediatric Care'],
   },
+  {
+    id: 'doc-rohan',
+    name: 'Dr. Rohan Sharma',
+    role: 'Pediatric & Preventive Dentist',
+    credentials: 'BDS, MDS (Pedodontics)',
+    experienceYears: 11,
+    rating: '4.9',
+    reviewCount: 246,
+    availability: 'Mon – Sat · 9:00 AM – 5:00 PM',
+    bio: 'Dedicated to anxiety-free children’s dentistry, painless pit-and-fissure sealants, and gentle preventive hygiene care.',
+    imageUrl: '/src/assets/images/doctor_rohan_kulkarni_1794982116990.jpg',
+    specialties: ['Kids Dentistry', 'Fluoride & Sealants', 'Habit Counseling'],
+  },
+  {
+    id: 'doc-meera',
+    name: 'Dr. Meera Iyer',
+    role: 'Periodontist & Laser Gum Specialist',
+    credentials: 'BDS, MDS (Periodontology)',
+    experienceYears: 13,
+    rating: '4.9',
+    reviewCount: 215,
+    availability: 'Tue – Sat · 10:00 AM – 6:00 PM',
+    bio: 'Performs laser-assisted gum contouring, painless pocket therapy, and regenerative periodontal care for lasting tooth support.',
+    imageUrl: '/src/assets/images/doctor_meera_iyer_1794982117233.jpg',
+    specialties: ['Laser Gum Care', 'Bleeding Gums', 'Smile Contouring'],
+  },
+  {
+    id: 'doc-kabir',
+    name: 'Dr. Kabir Malhotra',
+    role: 'Maxillofacial & TMJ Surgeon',
+    credentials: 'BDS, MDS (OMFS)',
+    experienceYears: 14,
+    rating: '4.8',
+    reviewCount: 189,
+    availability: 'Mon – Fri · 11:00 AM – 6:30 PM',
+    bio: 'Treats complex impacted wisdom teeth, jaw joint (TMJ) disorders, and facial trauma using low-radiation 3D imaging.',
+    imageUrl: '/src/assets/images/doctor_kabir_malhotra_1794982117656.jpg',
+    specialties: ['Impacted Wisdom Teeth', 'TMJ Jaw Care', 'Oral Surgery'],
+  },
 ];
 
 export const TREATMENTS: Treatment[] = [
@@ -80,7 +122,7 @@ export const TREATMENTS: Treatment[] = [
     title: '3D Intraoral Scanning & Ceramic Crowns',
     category: 'Cosmetic',
     duration: '45 min',
-    priceRange: '$480 – $890',
+    priceRange: '₹6,500 – ₹14,000',
     summary:
       'Optical 3D tooth mapping eliminates messy putty impressions and crafts precision-milled zirconia crowns in a single visit.',
     imageUrl: DIGITAL_SCAN_IMAGE,
@@ -97,7 +139,7 @@ export const TREATMENTS: Treatment[] = [
     title: 'Guided Biofilm Cleaning & Exam',
     category: 'Preventive',
     duration: '35 min',
-    priceRange: '$110 – $160',
+    priceRange: '₹1,200 – ₹2,500',
     summary:
       'Gentle warm-water ultrasonic scaling, enamel polishing, and digital cavity screening for long-term gum health.',
     imageUrl: HERO_SMILE_IMAGE,
@@ -114,7 +156,7 @@ export const TREATMENTS: Treatment[] = [
     title: 'Guided Titanium Dental Implants',
     category: 'Implants & Ortho',
     duration: '60 min',
-    priceRange: '$1,450 – $2,200',
+    priceRange: '₹24,000 – ₹42,000',
     summary:
       'Computer-guided keyhole implant placement designed for rapid healing and lifelike chewing strength.',
     imageUrl: IMPLANT_CROWN_IMAGE,
@@ -131,7 +173,7 @@ export const TREATMENTS: Treatment[] = [
     title: 'Clear Invisible Aligners',
     category: 'Implants & Ortho',
     duration: '30 min consult',
-    priceRange: '$2,100 – $3,600',
+    priceRange: '₹45,000 – ₹95,000',
     summary:
       'Removable, BPA-free transparent aligner trays staged with digital tooth-movement previews before you start.',
     imageUrl: CLEAR_ALIGNERS_IMAGE,
@@ -148,7 +190,7 @@ export const TREATMENTS: Treatment[] = [
     title: 'Enamel-Safe Laser Whitening',
     category: 'Cosmetic',
     duration: '40 min',
-    priceRange: '$260 – $380',
+    priceRange: '₹5,500 – ₹9,500',
     summary:
       'pH-balanced clinical whitening gel paired with cold-LED activation to brighten teeth up to 6 shades with zero sensitivity.',
     imageUrl: WHITENING_CARE_IMAGE,
@@ -165,7 +207,7 @@ export const TREATMENTS: Treatment[] = [
     title: 'Single-Visit Root Canal Care',
     category: 'Preventive',
     duration: '50 min',
-    priceRange: '$320 – $540',
+    priceRange: '₹4,500 – ₹8,500',
     summary:
       'Microscope-assisted endodontic therapy under local comfort numbing to relieve deep toothache and preserve natural teeth.',
     imageUrl: ROOT_CANAL_IMAGE,
@@ -238,6 +280,10 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
     date: '2026-11-20',
     timeSlot: '10:30 AM',
     notes: 'Routine 6-month cleaning and enamel sensitivity check.',
+    bookingFeeInr: 500,
+    paymentMethod: 'UPI / QR',
+    paymentStatus: 'Paid (₹500)',
+    paymentRef: 'PAY-20410',
     status: 'Confirmed',
     createdAt: '2026-11-16',
   },

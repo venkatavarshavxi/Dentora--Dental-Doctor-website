@@ -1,7 +1,34 @@
-import { CheckCircle2, Download, X } from 'lucide-react';
+import {
+  CheckCircle2,
+  CreditCard,
+  Download,
+  IndianRupee,
+  Printer,
+  QrCode,
+  Store,
+  X,
+} from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
-import { DOCTORS, TIME_SLOTS, TREATMENTS } from '../data/seedData';
-import { Appointment, UrgencyLevel, VisitType } from '../types/dental';
+import {
+  BOOKING_FEE_INR,
+  DOCTORS,
+  MAX_SLOT_CAPACITY,
+  TIME_SLOTS,
+  TREATMENTS,
+} from '../data/seedData';
+import { getSlotAvailability } from '../db/dentalStore';
+import {
+  Appointment,
+  PaymentMethod,
+  UrgencyLevel,
+  VisitType,
+} from '../types/dental';
+import { downloadAppointmentSlip } from '../utils/appointmentSlip';
+import { getNextOpenClinicDate, isSundayDate } from '../utils/clinicDates';
+import { sendBookingConfirmationEmail } from '../utils/emailConfirmation';
+import { AppointmentSlipCard } from './AppointmentSlipCard';
+import { ClinicDatePicker } from './ClinicDatePicker';
+import { PaymentGatewayStep } from './PaymentGatewayStep';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -22,49 +49,13 @@ interface BookingModalProps {
     date: string;
     timeSlot: string;
     notes: string;
+    paymentMethod: PaymentMethod;
+    paymentRef?: string;
   }) => { ok: true; appointment: Appointment } | { ok: false; error: string };
 }
 
 const ALPHABETS_ONLY_REGEX = /^[A-Za-z\s.'-]{2,}$/;
 const PHONE_10_DIGITS_REGEX = /^\d{10}$/;
-
-export function downloadAppointmentSlip(apt: Appointment) {
-  const doc = DOCTORS.find((d) => d.id === apt.doctorId);
-  const tr = TREATMENTS.find((t) => t.id === apt.treatmentId);
-
-  const lines = [
-    '=========================================',
-    '        DENTORA DENTAL STUDIO',
-    '     CONFIRMED APPOINTMENT PASS',
-    '=========================================',
-    `Reference ID : ${apt.id.toUpperCase()}`,
-    `Status       : ${apt.status}`,
-    `Patient      : ${apt.patientName} (Age ${apt.patientAge})`,
-    `Visit Type   : ${apt.visitType} · ${apt.urgency}`,
-    `Phone        : ${apt.patientPhone}`,
-    `Email        : ${apt.patientEmail}`,
-    '-----------------------------------------',
-    `Specialist   : ${doc?.name || 'Dentora Specialist'}`,
-    `Treatment    : ${tr?.title || 'Consultation'}`,
-    `Date & Time  : ${apt.date} at ${apt.timeSlot}`,
-    `24h Reminder : ${apt.reminderOptIn ? 'Enabled' : 'Disabled'}`,
-    `Notes        : ${apt.notes || 'None'}`,
-    '-----------------------------------------',
-    'Location     : 420 Meridian Dental Plaza, Suite 300',
-    'Helpline     : +1 (415) 890-4400',
-    '=========================================',
-  ].join('\n');
-
-  const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `dentora-appointment-${apt.id}.txt`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
 
 export function BookingModal({
   isOpen,
@@ -74,13 +65,11 @@ export function BookingModal({
   onClose,
   onConfirmBooking,
 }: BookingModalProps) {
-  const todayStr = new Date().toISOString().slice(0, 10);
-
   const [doctorId, setDoctorId] = useState(initialDoctorId || DOCTORS[0].id);
   const [treatmentId, setTreatmentId] = useState(
     initialTreatmentId || TREATMENTS[0].id,
   );
-  const [date, setDate] = useState('2026-11-20');
+  const [date, setDate] = useState(() => getNextOpenClinicDate());
   const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[0]);
   const [visitType, setVisitType] = useState<VisitType>('New Patient');
   const [urgency, setUrgency] = useState<UrgencyLevel>('Routine');
@@ -92,8 +81,11 @@ export function BookingModal({
   const [phoneHint, setPhoneHint] = useState('');
   const [reminderOptIn, setReminderOptIn] = useState(true);
   const [notes, setNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('UPI / QR');
+  const [step, setStep] = useState<'form' | 'payment' | 'confirmed'>('form');
   const [error, setError] = useState('');
   const [confirmedApt, setConfirmedApt] = useState<Appointment | null>(null);
+  const [emailFeedback, setEmailFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -102,22 +94,39 @@ export function BookingModal({
       setError('');
       setNameHint('');
       setPhoneHint('');
+      setStep('form');
       setConfirmedApt(null);
+      setEmailFeedback(null);
     }
   }, [isOpen, initialDoctorId, initialTreatmentId]);
 
+  useEffect(() => {
+    if (!isOpen || step !== 'form') return;
+    const currentStatus = getSlotAvailability(
+      existingAppointments,
+      doctorId,
+      date,
+      timeSlot,
+    );
+    if (currentStatus.isUnavailable) {
+      const firstOpen = TIME_SLOTS.find(
+        (slot) =>
+          !getSlotAvailability(existingAppointments, doctorId, date, slot)
+            .isUnavailable,
+      );
+      if (firstOpen) {
+        setTimeSlot(firstOpen);
+      }
+    }
+  }, [isOpen, step, doctorId, date, existingAppointments, timeSlot]);
+
   if (!isOpen) return null;
 
-  const isSlotTaken = (slot: string) =>
-    existingAppointments.some(
-      (apt) =>
-        apt.status === 'Confirmed' &&
-        apt.doctorId === doctorId &&
-        apt.date === date &&
-        apt.timeSlot === slot,
-    );
-
-  const openSlotsCount = TIME_SLOTS.filter((slot) => !isSlotTaken(slot)).length;
+  const openSlotsCount = TIME_SLOTS.filter(
+    (slot) =>
+      !getSlotAvailability(existingAppointments, doctorId, date, slot)
+        .isUnavailable,
+  ).length;
 
   const handleNameChange = (rawValue: string) => {
     const cleaned = rawValue.replace(/[^A-Za-z\s.'-]/g, '');
@@ -144,6 +153,48 @@ export function BookingModal({
       setPhoneHint('');
     }
     setPatientPhone(digitsOnly);
+  };
+
+  const finalizeBooking = (customPaymentRef?: string) => {
+    const numericAge = Number(patientAge);
+    const result = onConfirmBooking({
+      patientName: patientName.trim(),
+      patientAge: numericAge,
+      patientEmail: patientEmail.trim(),
+      patientPhone,
+      visitType,
+      urgency,
+      reminderOptIn,
+      doctorId,
+      treatmentId,
+      date,
+      timeSlot,
+      notes: notes.trim(),
+      paymentMethod,
+      paymentRef: customPaymentRef,
+    });
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    setConfirmedApt(result.appointment);
+    setStep('confirmed');
+    setEmailFeedback(`Sending confirmation email to ${result.appointment.patientEmail}...`);
+
+    // Silently dispatch confirmation email directly to the patient when EmailJS is configured
+    void sendBookingConfirmationEmail(result.appointment).then((dispatch) => {
+      if (dispatch.mode === 'emailjs_sent') {
+        setEmailFeedback(dispatch.message);
+      } else if (dispatch.mode === 'emailjs_failed') {
+        setEmailFeedback(dispatch.message);
+      } else {
+        setEmailFeedback(
+          'Your chair slot is reserved. Print or download your Dentora pass below.',
+        );
+      }
+    });
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -181,31 +232,41 @@ export function BookingModal({
       return;
     }
 
-    const result = onConfirmBooking({
-      patientName: patientName.trim(),
-      patientAge: numericAge,
-      patientEmail: patientEmail.trim(),
-      patientPhone,
-      visitType,
-      urgency,
-      reminderOptIn,
-      doctorId,
-      treatmentId,
-      date,
-      timeSlot,
-      notes: notes.trim(),
-    });
-
-    if (!result.ok) {
-      setError(result.error);
+    if (isSundayDate(date)) {
+      setError(
+        'Dentora is closed on Sundays. Please select a Monday to Saturday date.',
+      );
       return;
     }
 
-    setConfirmedApt(result.appointment);
-  };
+    const slotState = getSlotAvailability(
+      existingAppointments,
+      doctorId,
+      date,
+      timeSlot,
+    );
 
-  const selectedDoctor = DOCTORS.find((d) => d.id === doctorId);
-  const selectedTreatment = TREATMENTS.find((t) => t.id === treatmentId);
+    if (slotState.isDoctorBooked) {
+      setError(
+        'This time slot is already booked for the selected specialist. Please pick an open slot.',
+      );
+      return;
+    }
+
+    if (slotState.isCapacityFull) {
+      setError(
+        `This ${timeSlot} slot is already full (${MAX_SLOT_CAPACITY}/${MAX_SLOT_CAPACITY} booked). Please pick another time.`,
+      );
+      return;
+    }
+
+    if (paymentMethod === 'UPI / QR' || paymentMethod === 'Card') {
+      setStep('payment');
+      return;
+    }
+
+    finalizeBooking();
+  };
 
   return (
     <div
@@ -219,86 +280,76 @@ export function BookingModal({
           type="button"
           onClick={onClose}
           aria-label="Close booking dialog"
-          className="absolute right-5 top-5 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+          className="absolute right-5 top-5 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-900 cursor-pointer print:hidden"
         >
           <X className="h-4 w-4" />
         </button>
 
-        {confirmedApt ? (
-          <div className="py-4">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-              <CheckCircle2 className="h-7 w-7" />
-            </div>
-
-            <h3
-              id="booking-modal-title"
-              className="mt-4 font-display text-2xl font-bold text-slate-900"
-            >
-              Consultation Confirmed
-            </h3>
-            <p className="mt-1.5 text-sm text-slate-600">
-              Your appointment is saved in your Dentora portal. Download your
-              appointment pass below if needed.
-            </p>
-
-            <div className="mt-6 space-y-3 rounded-xl border border-blue-100 bg-white p-5 text-sm">
-              <div className="flex justify-between gap-4">
-                <span className="text-slate-500">Reference ID</span>
-                <span className="font-mono-num font-semibold text-slate-900">
-                  {confirmedApt.id.toUpperCase()}
-                </span>
+        {step === 'confirmed' && confirmedApt ? (
+          <div className="py-2">
+            <div className="mb-5 flex items-center gap-3 print:hidden">
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700 shrink-0">
+                <CheckCircle2 className="h-6 w-6" />
               </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-slate-500">Patient</span>
-                <span className="font-semibold text-slate-900 text-right">
-                  {confirmedApt.patientName} (Age {confirmedApt.patientAge}) ·{' '}
-                  {confirmedApt.patientPhone}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-slate-500">Visit Details</span>
-                <span className="font-medium text-slate-900">
-                  {confirmedApt.visitType} · {confirmedApt.urgency}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-slate-500">Specialist</span>
-                <span className="font-semibold text-slate-900">
-                  {selectedDoctor?.name}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-slate-500">Treatment</span>
-                <span className="font-medium text-slate-900 text-right">
-                  {selectedTreatment?.title}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-slate-500">Date &amp; Time</span>
-                <span className="font-mono-num font-semibold text-blue-700">
-                  {confirmedApt.date} · {confirmedApt.timeSlot}
-                </span>
+              <div>
+                <h3
+                  id="booking-modal-title"
+                  className="font-display text-xl font-bold text-slate-900 sm:text-2xl"
+                >
+                  Consultation Confirmed
+                </h3>
+                <p className="text-xs text-slate-600 sm:text-sm">
+                  {emailFeedback ||
+                    'Your chair slot is reserved. Print or download your Dentora pass below.'}
+                </p>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <AppointmentSlipCard appointment={confirmedApt} />
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 print:hidden">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:border-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+              >
+                <Printer className="h-4 w-4" aria-hidden="true" />
+                <span>Print / PDF</span>
+              </button>
               <button
                 type="button"
                 onClick={() => downloadAppointmentSlip(confirmedApt)}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-white px-5 py-3 text-sm font-semibold text-blue-700 hover:border-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 hover:border-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
               >
                 <Download className="h-4 w-4" aria-hidden="true" />
-                Download Slip
+                <span>Download Slip</span>
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition-colors cursor-pointer"
+                className="rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 transition-colors cursor-pointer"
               >
                 Done
               </button>
             </div>
           </div>
+        ) : step === 'payment' &&
+          (paymentMethod === 'UPI / QR' || paymentMethod === 'Card') ? (
+          <PaymentGatewayStep
+            patientName={patientName.trim()}
+            patientEmail={patientEmail.trim()}
+            doctorId={doctorId}
+            treatmentId={treatmentId}
+            date={date}
+            timeSlot={timeSlot}
+            paymentMethod={paymentMethod}
+            error={error}
+            onBack={() => {
+              setError('');
+              setStep('form');
+            }}
+            onConfirmPaid={(ref) => finalizeBooking(ref)}
+          />
         ) : (
           <div>
             <p className="text-xs font-semibold text-blue-700">
@@ -410,50 +461,77 @@ export function BookingModal({
               </div>
 
               <div>
-                <label
-                  htmlFor="book-date"
-                  className="block text-xs font-semibold text-slate-700"
-                >
-                  Preferred Date
-                </label>
-                <input
-                  id="book-date"
-                  type="date"
-                  min={todayStr}
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
-                />
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="book-date"
+                    className="block text-xs font-semibold text-slate-700"
+                  >
+                    Preferred Date
+                  </label>
+                  <span className="text-[11px] font-medium text-slate-500">
+                    Closed on Sundays
+                  </span>
+                </div>
+                <div className="mt-1.5">
+                  <ClinicDatePicker
+                    id="book-date"
+                    value={date}
+                    onChange={setDate}
+                  />
+                </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
                   <span className="block text-xs font-semibold text-slate-700">
-                    Available Time Slots
+                    Available Time Slots (Max {MAX_SLOT_CAPACITY} patients/slot)
                   </span>
                   <span className="font-mono-num text-[11px] font-medium text-blue-700">
                     {openSlotsCount} of {TIME_SLOTS.length} open
                   </span>
                 </div>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {TIME_SLOTS.map((slot) => {
-                    const taken = isSlotTaken(slot);
-                    const active = timeSlot === slot && !taken;
+                    const availability = getSlotAvailability(
+                      existingAppointments,
+                      doctorId,
+                      date,
+                      slot,
+                    );
+                    const active =
+                      timeSlot === slot && !availability.isUnavailable;
                     return (
                       <button
                         key={slot}
                         type="button"
-                        disabled={taken}
+                        disabled={availability.isUnavailable}
                         onClick={() => setTimeSlot(slot)}
-                        className={`font-mono-num rounded-lg border px-2.5 py-2 text-xs font-medium transition-all whitespace-nowrap ${
-                          taken
-                            ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 line-through'
+                        className={`flex flex-col items-center justify-center rounded-lg border px-2.5 py-2 transition-all whitespace-nowrap ${
+                          availability.isUnavailable
+                            ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
                             : active
                               ? 'border-blue-700 bg-blue-700 text-white shadow-sm cursor-pointer'
                               : 'border-slate-200 bg-white text-slate-700 hover:border-blue-600 hover:text-blue-700 cursor-pointer'
                         }`}
                       >
-                        {slot}
+                        <span
+                          className={`font-mono-num text-xs font-semibold ${
+                            availability.isUnavailable ? 'line-through' : ''
+                          }`}
+                        >
+                          {slot}
+                        </span>
+                        <span
+                          className={`font-mono-num mt-0.5 text-[10px] font-medium ${
+                            availability.isUnavailable
+                              ? 'text-red-500'
+                              : active
+                                ? 'text-sky-100'
+                                : 'text-slate-500'
+                          }`}
+                        >
+                          {availability.statusLabel}
+                        </span>
                       </button>
                     );
                   })}
@@ -583,6 +661,64 @@ export function BookingModal({
                 <span>Send me a 24-hour pre-visit appointment reminder</span>
               </label>
 
+              {/* ₹500 Chair Reservation Fee & Payment Option */}
+              <div className="rounded-xl border border-blue-200 bg-white p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-900">
+                      Chair Reservation Fee (All Bookings)
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-slate-500">
+                      Adjusted against your final treatment bill at the clinic
+                    </p>
+                  </div>
+                  <span className="font-mono-num inline-flex items-center text-lg font-bold text-blue-700 shrink-0">
+                    <IndianRupee className="h-4 w-4" aria-hidden="true" />
+                    {BOOKING_FEE_INR}
+                  </span>
+                </div>
+
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {(
+                    [
+                      { id: 'UPI / QR', label: 'UPI / QR', icon: QrCode },
+                      { id: 'Card', label: 'Card', icon: CreditCard },
+                      {
+                        id: 'Pay at Clinic',
+                        label: 'Pay at Clinic',
+                        icon: Store,
+                      },
+                    ] as const
+                  ).map(({ id, label, icon: Icon }) => {
+                    const selected = paymentMethod === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setPaymentMethod(id)}
+                        className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                          selected
+                            ? 'border-blue-700 bg-blue-700 text-white'
+                            : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 hover:text-blue-700'
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        <span>{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <p className="mt-2.5 text-[11px] text-slate-600">
+                  {paymentMethod === 'UPI / QR' &&
+                    'Clicking continue opens the Dentora UPI QR scanner to pay ₹500.'}
+                  {paymentMethod === 'Card' &&
+                    'Clicking continue opens the ₹500 card confirmation checkout.'}
+                  {paymentMethod === 'Pay at Clinic' &&
+                    'No advance payment needed — pay ₹500 at Dentora reception upon arrival.'}
+                </p>
+              </div>
+
               {error && (
                 <p
                   role="alert"
@@ -596,7 +732,11 @@ export function BookingModal({
                 type="submit"
                 className="w-full rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 active:scale-[0.99] transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
               >
-                Confirm Appointment
+                {paymentMethod === 'UPI / QR'
+                  ? `Continue to UPI QR Payment (₹${BOOKING_FEE_INR})`
+                  : paymentMethod === 'Card'
+                    ? `Continue to Card Payment (₹${BOOKING_FEE_INR})`
+                    : `Confirm Booking (Pay ₹${BOOKING_FEE_INR} at Clinic)`}
               </button>
             </form>
           </div>

@@ -81,6 +81,8 @@ export default function App() {
     date: string;
     timeSlot: string;
     notes: string;
+    paymentMethod: 'UPI / QR' | 'Card' | 'Pay at Clinic';
+    paymentRef?: string;
   }) => {
     const result = saveAppointment(input);
     if (result.ok) {
