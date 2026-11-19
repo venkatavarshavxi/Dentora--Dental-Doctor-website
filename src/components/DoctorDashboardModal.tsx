@@ -10,7 +10,12 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { TIME_SLOTS, TREATMENTS } from '../data/seedData';
+import {
+  DOCTORS,
+  getDoctorTimeSlots,
+  TIME_SLOTS,
+  TREATMENTS,
+} from '../data/seedData';
 import { getSlotAvailability } from '../db/dentalStore';
 import { Appointment, AuthSession, DentalQuestion } from '../types/dental';
 import { formatReadableDate } from '../utils/clinicDates';
@@ -75,9 +80,12 @@ export function DoctorDashboardModal({
   const pendingQuestions = questions.filter((q) => q.status === 'Pending Review');
 
   const startReschedule = (apt: Appointment) => {
+    const allowedSlots = getDoctorTimeSlots(apt.doctorId);
     setRescheduleId(apt.id);
     setNewDate(apt.date);
-    setNewSlot(apt.timeSlot);
+    setNewSlot(
+      allowedSlots.includes(apt.timeSlot) ? apt.timeSlot : allowedSlots[0],
+    );
     setRescheduleError('');
   };
 
@@ -222,6 +230,7 @@ export function DoctorDashboardModal({
                 </div>
               ) : (
                 filteredDoctorAppointments.map((apt) => {
+                  const doc = DOCTORS.find((d) => d.id === apt.doctorId);
                   const tr = TREATMENTS.find((t) => t.id === apt.treatmentId);
                   const isConfirmed = apt.status === 'Confirmed';
                   const isCompleted = apt.status === 'Completed';
@@ -325,12 +334,16 @@ export function DoctorDashboardModal({
                       {isConfirmed && isRescheduling && (
                         <div className="mt-4 space-y-3 border-t border-slate-100 pt-3">
                           <p className="text-xs font-semibold text-slate-800">
-                            Reschedule Date &amp; Chair Time (Mon–Sat)
+                            Reschedule Date &amp; Chair Time (
+                            {doc?.workingDaysLabel || 'Mon–Sat'})
                           </p>
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <ClinicDatePicker
                               value={newDate}
                               onChange={setNewDate}
+                              allowedDays={doc?.workingDays}
+                              scheduleLabel={doc?.workingDaysLabel}
+                              availabilityText={doc?.availability}
                               compact
                             />
                             <select
@@ -338,7 +351,7 @@ export function DoctorDashboardModal({
                               onChange={(e) => setNewSlot(e.target.value)}
                               className="font-mono-num w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900"
                             >
-                              {TIME_SLOTS.map((slot) => {
+                              {getDoctorTimeSlots(apt.doctorId).map((slot) => {
                                 const availability = getSlotAvailability(
                                   appointments,
                                   apt.doctorId,

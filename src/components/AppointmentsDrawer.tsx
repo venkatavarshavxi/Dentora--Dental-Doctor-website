@@ -10,7 +10,12 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { DOCTORS, TIME_SLOTS, TREATMENTS } from '../data/seedData';
+import {
+  DOCTORS,
+  getDoctorTimeSlots,
+  TIME_SLOTS,
+  TREATMENTS,
+} from '../data/seedData';
 import { getSlotAvailability } from '../db/dentalStore';
 import { Appointment, AuthSession } from '../types/dental';
 import { AppointmentSlipModal } from './AppointmentSlipModal';
@@ -76,9 +81,12 @@ export function AppointmentsDrawer({
   });
 
   const startReschedule = (apt: Appointment) => {
+    const allowedSlots = getDoctorTimeSlots(apt.doctorId);
     setRescheduleId(apt.id);
     setNewDate(apt.date);
-    setNewSlot(apt.timeSlot);
+    setNewSlot(
+      allowedSlots.includes(apt.timeSlot) ? apt.timeSlot : allowedSlots[0],
+    );
     setRescheduleError('');
   };
 
@@ -290,11 +298,14 @@ export function AppointmentsDrawer({
                   {isRescheduling ? (
                     <div className="mt-3 space-y-2.5 border-t border-slate-100 pt-3">
                       <p className="text-xs font-semibold text-slate-800">
-                        Pick New Date &amp; Time (Mon–Sat)
+                        Pick New Date &amp; Time ({doc?.workingDaysLabel || 'Mon–Sat'})
                       </p>
                       <ClinicDatePicker
                         value={newDate}
                         onChange={setNewDate}
+                        allowedDays={doc?.workingDays}
+                        scheduleLabel={doc?.workingDaysLabel}
+                        availabilityText={doc?.availability}
                         compact
                       />
                       <select
@@ -302,7 +313,7 @@ export function AppointmentsDrawer({
                         onChange={(e) => setNewSlot(e.target.value)}
                         className="font-mono-num w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs text-slate-900"
                       >
-                        {TIME_SLOTS.map((slot) => {
+                        {getDoctorTimeSlots(apt.doctorId).map((slot) => {
                           const availability = getSlotAvailability(
                             appointments,
                             apt.doctorId,

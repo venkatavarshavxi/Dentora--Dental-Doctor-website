@@ -20,6 +20,8 @@ export interface Doctor {
   rating: string;
   reviewCount: number;
   availability: string;
+  workingDays: number[];
+  workingDaysLabel: string;
   bio: string;
   imageUrl: string;
   specialties: string[];

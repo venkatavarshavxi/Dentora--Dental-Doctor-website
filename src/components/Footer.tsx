@@ -66,6 +66,12 @@ export function Footer({
               Specialists
             </a>
             <a
+              href="#about"
+              className="text-slate-300 hover:text-sky-300 transition-colors"
+            >
+              About Us
+            </a>
+            <a
               href="#ask-sec"
               className="text-slate-300 hover:text-sky-300 transition-colors"
             >

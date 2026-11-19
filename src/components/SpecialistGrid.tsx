@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarCheck2, Star, UserRound } from 'lucide-react';
+import { ArrowUpRight, CalendarCheck2, Clock, Star, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { DOCTORS, PATIENT_TESTIMONIALS } from '../data/seedData';
 import { Doctor } from '../types/dental';
@@ -156,20 +156,30 @@ export function SpecialistGrid({
                   className="mt-6 border-t border-slate-100 pt-4"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center justify-between text-xs text-slate-600">
-                    <span className="inline-flex items-center gap-1 font-medium text-slate-800">
-                      <Star
-                        className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
+                  <div className="space-y-2 text-xs text-slate-600">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="inline-flex items-center gap-1.5 font-semibold text-slate-900">
+                        <Star
+                          className="h-3.5 w-3.5 fill-amber-400 text-amber-400 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="font-mono-num">{doctor.rating}</span>
+                        <span className="font-normal text-slate-500">
+                          ({doctor.reviewCount} reviews)
+                        </span>
+                      </span>
+                      <span className="font-mono-num text-[11px] font-semibold text-blue-700 whitespace-nowrap">
+                        {doctor.workingDaysLabel}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 font-mono-num text-[11px] text-slate-500">
+                      <Clock
+                        className="h-3.5 w-3.5 shrink-0 text-blue-700"
                         aria-hidden="true"
                       />
-                      <span className="font-mono-num">{doctor.rating}</span>
-                      <span className="text-slate-400">
-                        ({doctor.reviewCount})
-                      </span>
-                    </span>
-                    <span className="font-mono-num text-[11px] text-slate-500">
-                      {doctor.availability}
-                    </span>
+                      <span>{doctor.availability}</span>
+                    </div>
                   </div>
 
                   <div

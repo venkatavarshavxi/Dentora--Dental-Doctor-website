@@ -1,5 +1,6 @@
 import {
   DOCTORS,
+  getDoctorTimeSlots,
   INITIAL_APPOINTMENTS,
   INITIAL_QUESTIONS,
   MAX_SLOT_CAPACITY,
@@ -9,7 +10,7 @@ import {
   DentalQuestion,
   QuestionTopic,
 } from '../types/dental';
-import { isSundayDate } from '../utils/clinicDates';
+import { isDoctorWorkingDate, isSundayDate } from '../utils/clinicDates';
 
 const APPOINTMENTS_KEY = 'dentora_appointments_v2';
 const QUESTIONS_KEY = 'dentora_questions_v2';
@@ -98,6 +99,22 @@ export function saveAppointment(
     };
   }
 
+  const doctor = DOCTORS.find((d) => d.id === newApt.doctorId);
+  if (doctor && !isDoctorWorkingDate(newApt.date, doctor.workingDays)) {
+    return {
+      ok: false,
+      error: `${doctor.name} is available ${doctor.workingDaysLabel} only. Please pick an open day for this specialist.`,
+    };
+  }
+
+  const allowedSlots = getDoctorTimeSlots(newApt.doctorId);
+  if (!allowedSlots.includes(newApt.timeSlot)) {
+    return {
+      ok: false,
+      error: `${doctor?.name || 'This specialist'} does not see patients at ${newApt.timeSlot}. Please pick an open clinic slot.`,
+    };
+  }
+
   const existing = loadAppointments();
   const availability = getSlotAvailability(
     existing,
@@ -153,6 +170,22 @@ export function rescheduleAppointment(
   const target = existing.find((apt) => apt.id === id);
   if (!target) {
     return { ok: false, error: 'Appointment not found.' };
+  }
+
+  const doctor = DOCTORS.find((d) => d.id === target.doctorId);
+  if (doctor && !isDoctorWorkingDate(newDate, doctor.workingDays)) {
+    return {
+      ok: false,
+      error: `${doctor.name} is available ${doctor.workingDaysLabel} only. Please select an open day for this specialist.`,
+    };
+  }
+
+  const allowedSlots = getDoctorTimeSlots(target.doctorId);
+  if (!allowedSlots.includes(newTimeSlot)) {
+    return {
+      ok: false,
+      error: `${doctor?.name || 'This specialist'} is unavailable at ${newTimeSlot}. Please select an open clinic slot.`,
+    };
   }
 
   const availability = getSlotAvailability(

@@ -11,8 +11,8 @@ import {
   CLINIC_WHATSAPP_DISPLAY,
   DOCTOR_PRIMARY_TREATMENT,
   DOCTORS,
+  getDoctorTimeSlots,
   MAX_SLOT_CAPACITY,
-  TIME_SLOTS,
   TREATMENTS,
 } from '../data/seedData';
 import { getSlotAvailability } from '../db/dentalStore';
@@ -23,7 +23,12 @@ import {
   VisitType,
 } from '../types/dental';
 import { downloadAppointmentSlip } from '../utils/appointmentSlip';
-import { getNextOpenClinicDate, isSundayDate } from '../utils/clinicDates';
+import {
+  getNextOpenClinicDate,
+  isDoctorWorkingDate,
+  isSundayDate,
+  parseLocalDate,
+} from '../utils/clinicDates';
 import {
   buildClinicWhatsAppUrl,
   buildPatientWhatsAppUrl,
@@ -74,8 +79,12 @@ export function BookingModal({
       DOCTOR_PRIMARY_TREATMENT[initialDoc] ||
       TREATMENTS[0].id,
   );
-  const [date, setDate] = useState(() => getNextOpenClinicDate());
-  const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[0]);
+  const [date, setDate] = useState(() =>
+    getNextOpenClinicDate(new Date(), DOCTORS[0].workingDays),
+  );
+  const [timeSlot, setTimeSlot] = useState(
+    () => getDoctorTimeSlots(initialDoc)[0],
+  );
   const [visitType, setVisitType] = useState<VisitType>('New Patient');
   const [urgency, setUrgency] = useState<UrgencyLevel>('Routine');
   const [patientName, setPatientName] = useState('');
@@ -114,8 +123,15 @@ export function BookingModal({
         initialTreatmentId ||
         DOCTOR_PRIMARY_TREATMENT[targetDoc] ||
         TREATMENTS[0].id;
+      const targetDocObj =
+        DOCTORS.find((d) => d.id === targetDoc) || DOCTORS[0];
       setDoctorId(targetDoc);
       setTreatmentId(targetTr);
+      setDate((prev) =>
+        prev && isDoctorWorkingDate(prev, targetDocObj.workingDays)
+          ? prev
+          : getNextOpenClinicDate(new Date(), targetDocObj.workingDays),
+      );
       if (session?.role === 'customer') {
         setPatientName(session.name);
         setPatientEmail(session.email);
@@ -131,29 +147,34 @@ export function BookingModal({
     }
   }, [isOpen, initialDoctorId, initialTreatmentId, session]);
 
+  const doctorSlots = getDoctorTimeSlots(doctorId);
+
   useEffect(() => {
     if (!isOpen || step !== 'form') return;
+    const isValidForDoctor = doctorSlots.includes(timeSlot);
     const currentStatus = getSlotAvailability(
       existingAppointments,
       doctorId,
       date,
       timeSlot,
     );
-    if (currentStatus.isUnavailable) {
-      const firstOpen = TIME_SLOTS.find(
+    if (!isValidForDoctor || currentStatus.isUnavailable) {
+      const firstOpen = doctorSlots.find(
         (slot) =>
           !getSlotAvailability(existingAppointments, doctorId, date, slot)
             .isUnavailable,
       );
       if (firstOpen) {
         setTimeSlot(firstOpen);
+      } else if (!isValidForDoctor && doctorSlots[0]) {
+        setTimeSlot(doctorSlots[0]);
       }
     }
-  }, [isOpen, step, doctorId, date, existingAppointments, timeSlot]);
+  }, [isOpen, step, doctorId, date, existingAppointments, timeSlot, doctorSlots]);
 
   if (!isOpen) return null;
 
-  const openSlotsCount = TIME_SLOTS.filter(
+  const openSlotsCount = doctorSlots.filter(
     (slot) =>
       !getSlotAvailability(existingAppointments, doctorId, date, slot)
         .isUnavailable,
@@ -246,7 +267,23 @@ export function BookingModal({
 
     if (isSundayDate(date)) {
       setError(
-        'Dentora is closed on Sundays. Please select a Monday to Saturday date.',
+        'Dentora is closed on Sundays. Please select an open clinic date.',
+      );
+      return;
+    }
+
+    const activeDoctor =
+      DOCTORS.find((d) => d.id === doctorId) || DOCTORS[0];
+    if (!isDoctorWorkingDate(date, activeDoctor.workingDays)) {
+      setError(
+        `${activeDoctor.name} is available ${activeDoctor.workingDaysLabel} only. Please pick an available date from the calendar.`,
+      );
+      return;
+    }
+
+    if (!doctorSlots.includes(timeSlot)) {
+      setError(
+        `${activeDoctor.name} does not have a ${timeSlot} slot. Please select one of their available times.`,
       );
       return;
     }
@@ -470,11 +507,24 @@ export function BookingModal({
                     value={doctorId}
                     onChange={(e) => {
                       const nextDoctorId = e.target.value;
+                      const nextDoc =
+                        DOCTORS.find((d) => d.id === nextDoctorId) || DOCTORS[0];
                       setDoctorId(nextDoctorId);
                       setTreatmentId(
                         DOCTOR_PRIMARY_TREATMENT[nextDoctorId] ||
                           TREATMENTS[0].id,
                       );
+                      if (!isDoctorWorkingDate(date, nextDoc.workingDays)) {
+                        const baseDate = date ? parseLocalDate(date) : new Date();
+                        const todayStart = new Date();
+                        todayStart.setHours(0, 0, 0, 0);
+                        const startFrom =
+                          baseDate >= todayStart ? baseDate : new Date();
+                        setDate(
+                          getNextOpenClinicDate(startFrom, nextDoc.workingDays),
+                        );
+                      }
+                      setError('');
                     }}
                     className="mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
                   >
@@ -516,26 +566,35 @@ export function BookingModal({
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="book-date"
-                    className="block text-xs font-semibold text-slate-700"
-                  >
-                    Preferred Date
-                  </label>
-                  <span className="text-[11px] font-medium text-slate-500">
-                    Closed on Sundays
-                  </span>
-                </div>
-                <div className="mt-1.5">
-                  <ClinicDatePicker
-                    id="book-date"
-                    value={date}
-                    onChange={setDate}
-                  />
-                </div>
-              </div>
+              {(() => {
+                const selectedDoc =
+                  DOCTORS.find((d) => d.id === doctorId) || DOCTORS[0];
+                return (
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <label
+                        htmlFor="book-date"
+                        className="block text-xs font-semibold text-slate-700"
+                      >
+                        Preferred Date
+                      </label>
+                      <span className="text-[11px] font-medium text-slate-500">
+                        {selectedDoc.availability}
+                      </span>
+                    </div>
+                    <div className="mt-1.5">
+                      <ClinicDatePicker
+                        id="book-date"
+                        value={date}
+                        onChange={setDate}
+                        allowedDays={selectedDoc.workingDays}
+                        scheduleLabel={selectedDoc.workingDaysLabel}
+                        availabilityText={selectedDoc.availability}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div>
                 <div className="flex items-center justify-between">
@@ -543,11 +602,11 @@ export function BookingModal({
                     Available Time Slots (Max {MAX_SLOT_CAPACITY} patients/slot)
                   </span>
                   <span className="font-mono-num text-[11px] font-medium text-blue-700">
-                    {openSlotsCount} of {TIME_SLOTS.length} open
+                    {openSlotsCount} of {doctorSlots.length} open
                   </span>
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {TIME_SLOTS.map((slot) => {
+                  {doctorSlots.map((slot) => {
                     const availability = getSlotAvailability(
                       existingAppointments,
                       doctorId,

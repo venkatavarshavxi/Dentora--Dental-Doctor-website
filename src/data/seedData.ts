@@ -31,6 +31,15 @@ export const WHITENING_CARE_IMAGE =
 export const ROOT_CANAL_IMAGE =
   '/src/assets/images/treatment_root_canal_care_1794910680942.jpg';
 
+export const PEDIATRIC_CARE_IMAGE =
+  '/src/assets/images/treatment_pediatric_care_1795080839575.jpg';
+
+export const LASER_GUM_IMAGE =
+  '/src/assets/images/treatment_laser_gum_care_1795080839440.jpg';
+
+export const MAXILLOFACIAL_SCAN_IMAGE =
+  '/src/assets/images/treatment_maxillofacial_scan_1795080839764.jpg';
+
 export const MAX_SLOT_CAPACITY = 4;
 export const CLINIC_WHATSAPP_DIGITS = '919840012345';
 export const CLINIC_WHATSAPP_DISPLAY = '+91 98400 12345';
@@ -45,6 +54,8 @@ export const DOCTORS: Doctor[] = [
     rating: '4.9',
     reviewCount: 318,
     availability: 'Mon – Fri · 9:00 AM – 5:30 PM',
+    workingDays: [1, 2, 3, 4, 5],
+    workingDaysLabel: 'Mon–Fri',
     bio: 'Specializes in ultra-thin porcelain veneers, biocompatible ceramic crowns, and minimally invasive smile restorations.',
     imageUrl: '/src/assets/images/doctor_elena_vance_1794908434385.jpg',
     specialties: ['Porcelain Veneers', 'Smile Design', 'Laser Whitening'],
@@ -58,6 +69,8 @@ export const DOCTORS: Doctor[] = [
     rating: '4.9',
     reviewCount: 402,
     availability: 'Tue – Sat · 10:00 AM – 6:30 PM',
+    workingDays: [2, 3, 4, 5, 6],
+    workingDaysLabel: 'Tue–Sat',
     bio: 'Focuses on 3D CBCT-guided dental implants, painless wisdom tooth extractions, and full-arch restorative rehabilitation.',
     imageUrl: '/src/assets/images/doctor_marcus_chen_1794908434839.jpg',
     specialties: ['3D Guided Implants', 'Wisdom Tooth Surgery', 'Bone Grafting'],
@@ -71,6 +84,8 @@ export const DOCTORS: Doctor[] = [
     rating: '5.0',
     reviewCount: 274,
     availability: 'Mon – Sat · 9:30 AM – 6:00 PM',
+    workingDays: [1, 2, 3, 4, 5, 6],
+    workingDaysLabel: 'Mon–Sat',
     bio: 'Combines digital clear aligner planning with microscopic single-sitting root canal therapy for calm, predictable care.',
     imageUrl: '/src/assets/images/doctor_priya_nair_1794908436899.jpg',
     specialties: ['Clear Aligners', 'Microscopic Root Canal', 'Pediatric Care'],
@@ -84,6 +99,8 @@ export const DOCTORS: Doctor[] = [
     rating: '4.9',
     reviewCount: 246,
     availability: 'Mon – Sat · 9:00 AM – 5:00 PM',
+    workingDays: [1, 2, 3, 4, 5, 6],
+    workingDaysLabel: 'Mon–Sat',
     bio: 'Dedicated to anxiety-free children’s dentistry, painless pit-and-fissure sealants, and gentle preventive hygiene care.',
     imageUrl: '/src/assets/images/doctor_rohan_kulkarni_1794982116990.jpg',
     specialties: ['Kids Dentistry', 'Fluoride & Sealants', 'Habit Counseling'],
@@ -97,6 +114,8 @@ export const DOCTORS: Doctor[] = [
     rating: '4.9',
     reviewCount: 215,
     availability: 'Tue – Sat · 10:00 AM – 6:00 PM',
+    workingDays: [2, 3, 4, 5, 6],
+    workingDaysLabel: 'Tue–Sat',
     bio: 'Performs laser-assisted gum contouring, painless pocket therapy, and regenerative periodontal care for lasting tooth support.',
     imageUrl: '/src/assets/images/doctor_meera_iyer_1794982117233.jpg',
     specialties: ['Laser Gum Care', 'Bleeding Gums', 'Smile Contouring'],
@@ -110,6 +129,8 @@ export const DOCTORS: Doctor[] = [
     rating: '4.8',
     reviewCount: 189,
     availability: 'Mon – Fri · 11:00 AM – 6:30 PM',
+    workingDays: [1, 2, 3, 4, 5],
+    workingDaysLabel: 'Mon–Fri',
     bio: 'Treats complex impacted wisdom teeth, jaw joint (TMJ) disorders, and facial trauma using low-radiation 3D imaging.',
     imageUrl: '/src/assets/images/doctor_kabir_malhotra_1794982117656.jpg',
     specialties: ['Impacted Wisdom Teeth', 'TMJ Jaw Care', 'Oral Surgery'],
@@ -221,6 +242,7 @@ export const TREATMENTS: Treatment[] = [
     duration: '40 min',
     summary:
       'Gentle children’s dental exams, painless pit-and-fissure sealants, fluoride protection, and anxiety-free preventive care.',
+    imageUrl: PEDIATRIC_CARE_IMAGE,
     steps: [
       'Child-friendly dental checkup and cavity risk screening',
       'Painless pit-and-fissure molar sealants and fluoride varnish',
@@ -236,6 +258,7 @@ export const TREATMENTS: Treatment[] = [
     duration: '45 min',
     summary:
       'Laser-assisted gum contouring, gentle pocket therapy, and targeted care for bleeding or receding gums.',
+    imageUrl: LASER_GUM_IMAGE,
     steps: [
       'Periodontal pocket depth charting and digital gum assessment',
       'Ultrasonic root debridement and laser disinfection',
@@ -251,6 +274,7 @@ export const TREATMENTS: Treatment[] = [
     duration: '60 min',
     summary:
       'Specialized evaluation and surgical care for impacted wisdom teeth, jaw joint (TMJ) disorders, and facial oral surgery.',
+    imageUrl: MAXILLOFACIAL_SCAN_IMAGE,
     steps: [
       'Low-radiation 3D CBCT jaw and nerve pathway scan',
       'Targeted local comfort numbing and minimally invasive surgery',
@@ -406,3 +430,22 @@ export const TIME_SLOTS = [
   '03:30 PM',
   '05:00 PM',
 ];
+
+export const DOCTOR_TIME_SLOTS: Record<string, string[]> = {
+  // Mon – Fri · 9:00 AM – 5:30 PM
+  'doc-ananya': ['09:30 AM', '10:30 AM', '11:30 AM', '02:00 PM', '03:30 PM', '05:00 PM'],
+  // Tue – Sat · 10:00 AM – 6:30 PM (starts 10:00 AM — no 09:30 AM)
+  'doc-thomas': ['10:30 AM', '11:30 AM', '02:00 PM', '03:30 PM', '05:00 PM'],
+  // Mon – Sat · 9:30 AM – 6:00 PM
+  'doc-priya': ['09:30 AM', '10:30 AM', '11:30 AM', '02:00 PM', '03:30 PM', '05:00 PM'],
+  // Mon – Sat · 9:00 AM – 5:00 PM (closes 5:00 PM — last slot 03:30 PM)
+  'doc-rohan': ['09:30 AM', '10:30 AM', '11:30 AM', '02:00 PM', '03:30 PM'],
+  // Tue – Sat · 10:00 AM – 6:00 PM (starts 10:00 AM — no 09:30 AM)
+  'doc-meera': ['10:30 AM', '11:30 AM', '02:00 PM', '03:30 PM', '05:00 PM'],
+  // Mon – Fri · 11:00 AM – 6:30 PM (starts 11:00 AM — no 09:30 AM or 10:30 AM)
+  'doc-kabir': ['11:30 AM', '02:00 PM', '03:30 PM', '05:00 PM'],
+};
+
+export function getDoctorTimeSlots(doctorId: string): string[] {
+  return DOCTOR_TIME_SLOTS[doctorId] || TIME_SLOTS;
+}

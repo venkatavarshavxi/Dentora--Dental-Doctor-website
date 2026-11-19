@@ -11,10 +11,20 @@ interface ClinicDatePickerProps {
   id?: string;
   value: string;
   onChange: (dateStr: string) => void;
+  allowedDays?: number[];
+  scheduleLabel?: string;
+  availabilityText?: string;
   compact?: boolean;
 }
 
-const WEEKDAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const DAY_LABELS: Record<number, string> = {
+  1: 'Mon',
+  2: 'Tue',
+  3: 'Wed',
+  4: 'Thu',
+  5: 'Fri',
+  6: 'Sat',
+};
 
 interface CalendarDayCell {
   iso: string;
@@ -28,6 +38,9 @@ export function ClinicDatePicker({
   id,
   value,
   onChange,
+  allowedDays,
+  scheduleLabel,
+  availabilityText,
   compact = false,
 }: ClinicDatePickerProps) {
   const [open, setOpen] = useState(false);
@@ -35,6 +48,40 @@ export function ClinicDatePicker({
 
   const todayISO = getTodayISO();
   const todayDate = parseLocalDate(todayISO);
+
+  const visibleDays = useMemo(() => {
+    const valid = (allowedDays || [1, 2, 3, 4, 5, 6]).filter(
+      (d) => d >= 1 && d <= 6,
+    );
+    const unique = Array.from(new Set(valid)).sort((a, b) => a - b);
+    return unique.length > 0 ? unique : [1, 2, 3, 4, 5, 6];
+  }, [allowedDays]);
+
+  const colCount = visibleDays.length;
+  const gridColsClass =
+    colCount === 5
+      ? 'grid-cols-5'
+      : colCount === 4
+        ? 'grid-cols-4'
+        : 'grid-cols-6';
+
+  const effectiveScheduleLabel =
+    scheduleLabel ||
+    (colCount === 6
+      ? 'Mon–Sat'
+      : visibleDays.map((d) => DAY_LABELS[d]).join(', '));
+
+  const offDaysSummary = useMemo(() => {
+    const off: string[] = ['Sun'];
+    for (let d = 1; d <= 6; d++) {
+      if (!visibleDays.includes(d)) {
+        off.push(DAY_LABELS[d]);
+      }
+    }
+    return off.length === 1
+      ? 'Closed Sundays'
+      : `Unavailable: ${off.join(' & ')}`;
+  }, [visibleDays]);
 
   const initialCursor = useMemo(() => {
     const base = value ? parseLocalDate(value) : new Date();
@@ -78,35 +125,30 @@ export function ClinicDatePicker({
     year > todayDate.getFullYear() ||
     (year === todayDate.getFullYear() && month > todayDate.getMonth());
 
-  // Build Mon–Sat weeks strictly omitting Sundays from the calendar grid
+  // Build calendar rows strictly omitting Sundays and non-working weekdays for the selected doctor
   const weeks = useMemo(() => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const rows: Array<Array<CalendarDayCell | null>> = [];
-    let currentRow: Array<CalendarDayCell | null> = [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-    ];
+    let currentRow: Array<CalendarDayCell | null> = Array.from(
+      { length: colCount },
+      () => null,
+    );
     let hasCellInRow = false;
 
     for (let day = 1; day <= daysInMonth; day++) {
       const dateObj = new Date(year, month, day);
-      const dayOfWeek = dateObj.getDay(); // 0 = Sun, 1 = Mon ... 6 = Sat
+      const dayOfWeek = dateObj.getDay();
+      const colIndex = visibleDays.indexOf(dayOfWeek);
 
-      // Skip Sundays completely so Sunday bookings never appear in the calendar
-      if (dayOfWeek === 0) {
+      if (colIndex === -1) {
         if (hasCellInRow) {
           rows.push(currentRow);
-          currentRow = [null, null, null, null, null, null];
+          currentRow = Array.from({ length: colCount }, () => null);
           hasCellInRow = false;
         }
         continue;
       }
 
-      const colIndex = dayOfWeek - 1; // Mon=0 ... Sat=5
       const iso = formatDateISO(dateObj);
       currentRow[colIndex] = {
         iso,
@@ -117,9 +159,9 @@ export function ClinicDatePicker({
       };
       hasCellInRow = true;
 
-      if (dayOfWeek === 6) {
+      if (colIndex === colCount - 1) {
         rows.push(currentRow);
-        currentRow = [null, null, null, null, null, null];
+        currentRow = Array.from({ length: colCount }, () => null);
         hasCellInRow = false;
       }
     }
@@ -129,7 +171,7 @@ export function ClinicDatePicker({
     }
 
     return rows;
-  }, [year, month, todayISO, value]);
+  }, [year, month, todayISO, value, visibleDays, colCount]);
 
   const monthLabel = viewMonth.toLocaleDateString('en-US', {
     month: 'long',
@@ -156,18 +198,20 @@ export function ClinicDatePicker({
             aria-hidden="true"
           />
           <span>
-            {value ? formatReadableDate(value) : 'Select clinic date (Mon–Sat)'}
+            {value
+              ? formatReadableDate(value)
+              : `Select date (${effectiveScheduleLabel})`}
           </span>
         </span>
-        <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap">
-          Mon–Sat
+        <span className="text-[11px] font-semibold text-blue-700 whitespace-nowrap">
+          {effectiveScheduleLabel}
         </span>
       </button>
 
       {open && (
         <div
           role="dialog"
-          aria-label="Clinic booking calendar"
+          aria-label="Specialist booking calendar"
           className={`popup-enter mt-2 rounded-xl border border-blue-200 bg-white p-4 shadow-xl ${
             compact ? 'relative z-20' : 'absolute left-0 right-0 z-30'
           }`}
@@ -197,20 +241,22 @@ export function ClinicDatePicker({
             </button>
           </div>
 
-          <div className="grid grid-cols-6 gap-1.5 border-b border-slate-100 pb-2 text-center">
-            {WEEKDAY_HEADERS.map((dayName) => (
+          <div
+            className={`grid ${gridColsClass} gap-1.5 border-b border-slate-100 pb-2 text-center`}
+          >
+            {visibleDays.map((dayNum) => (
               <span
-                key={dayName}
+                key={dayNum}
                 className="text-[11px] font-semibold text-slate-500"
               >
-                {dayName}
+                {DAY_LABELS[dayNum]}
               </span>
             ))}
           </div>
 
           <div className="mt-2 space-y-1.5">
             {weeks.map((week, rowIdx) => (
-              <div key={rowIdx} className="grid grid-cols-6 gap-1.5">
+              <div key={rowIdx} className={`grid ${gridColsClass} gap-1.5`}>
                 {week.map((cell, colIdx) => {
                   if (!cell) {
                     return <div key={colIdx} className="h-9" />;
@@ -245,9 +291,9 @@ export function ClinicDatePicker({
             ))}
           </div>
 
-          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11px] text-slate-500">
-            <span>Open Mon – Sat · 9:00 AM – 6:30 PM</span>
-            <span className="font-semibold text-blue-700">Closed Sundays</span>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2.5 text-[11px] text-slate-500">
+            <span>{availabilityText || `Open ${effectiveScheduleLabel}`}</span>
+            <span className="font-semibold text-blue-700">{offDaysSummary}</span>
           </div>
         </div>
       )}

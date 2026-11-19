@@ -16,17 +16,33 @@ export function isSundayDate(dateStr: string): boolean {
   return parseLocalDate(dateStr).getDay() === 0;
 }
 
+export function isDoctorWorkingDate(
+  dateStr: string,
+  allowedDays: number[] = [1, 2, 3, 4, 5, 6],
+): boolean {
+  if (!dateStr) return false;
+  const day = parseLocalDate(dateStr).getDay();
+  return day !== 0 && allowedDays.includes(day);
+}
+
 export function getTodayISO(): string {
   return formatDateISO(new Date());
 }
 
-export function getNextOpenClinicDate(fromDate = new Date()): string {
+export function getNextOpenClinicDate(
+  fromDate = new Date(),
+  allowedDays: number[] = [1, 2, 3, 4, 5, 6],
+): string {
   const d = new Date(
     fromDate.getFullYear(),
     fromDate.getMonth(),
     fromDate.getDate(),
   );
-  if (d.getDay() === 0) {
+  for (let i = 0; i < 14; i++) {
+    const day = d.getDay();
+    if (day !== 0 && allowedDays.includes(day)) {
+      return formatDateISO(d);
+    }
     d.setDate(d.getDate() + 1);
   }
   return formatDateISO(d);

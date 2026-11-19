@@ -53,7 +53,7 @@ export function Navbar({
         {/* Zone 2: 5 concise single-line navigation links */}
         <nav
           aria-label="Primary Navigation"
-          className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-200"
+          className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-200"
         >
           <a
             href="#treatments"
@@ -66,6 +66,12 @@ export function Navbar({
             className="whitespace-nowrap shrink-0 py-1 hover:text-sky-300 hover:underline underline-offset-8 decoration-sky-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-sm"
           >
             Specialists
+          </a>
+          <a
+            href="#about"
+            className="whitespace-nowrap shrink-0 py-1 hover:text-sky-300 hover:underline underline-offset-8 decoration-sky-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-sm"
+          >
+            About
           </a>
           <a
             href="#ask-sec"
@@ -114,7 +120,7 @@ export function Navbar({
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileMenuOpen}
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-slate-100 hover:bg-white/10 transition-colors cursor-pointer"
+            className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-slate-100 hover:bg-white/10 transition-colors cursor-pointer"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -122,7 +128,7 @@ export function Navbar({
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-white/10 bg-[#091830] px-6 py-4 space-y-3">
+        <div className="lg:hidden border-t border-white/10 bg-[#091830] px-6 py-4 space-y-3">
           <a
             href="#treatments"
             onClick={() => setMobileMenuOpen(false)}
@@ -136,6 +142,13 @@ export function Navbar({
             className="block py-2 text-base font-medium text-slate-200 hover:text-sky-300"
           >
             Specialists
+          </a>
+          <a
+            href="#about"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 text-base font-medium text-slate-200 hover:text-sky-300"
+          >
+            About Us
           </a>
           <a
             href="#ask-sec"

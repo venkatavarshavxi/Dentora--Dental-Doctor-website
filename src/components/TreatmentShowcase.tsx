@@ -26,11 +26,10 @@ export function TreatmentShowcase({
   >('All Treatments');
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
-  const showcaseTreatments = TREATMENTS.slice(0, 6);
   const visibleTreatments =
     activeCategory === 'All Treatments'
-      ? showcaseTreatments
-      : showcaseTreatments.filter((item) => item.category === activeCategory);
+      ? TREATMENTS
+      : TREATMENTS.filter((item) => item.category === activeCategory);
 
   return (
     <section id="treatments" className="bg-[#F0F5FB] py-16 lg:py-20">

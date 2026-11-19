@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AboutUsSection } from './components/AboutUsSection';
 import { AppointmentsDrawer } from './components/AppointmentsDrawer';
 import { AskDentistSection } from './components/AskDentistSection';
 import { BookingModal } from './components/BookingModal';
@@ -224,6 +225,12 @@ export default function App() {
           isDoctor={isDoctor}
           onSelectDoctor={(doctor) => setSelectedDoctor(doctor)}
           onBookWithDoctor={handleBookWithDoctor}
+        />
+
+        <AboutUsSection
+          isDoctor={isDoctor}
+          onBookVisit={() => openBooking()}
+          onOpenDoctorPortal={() => setDoctorDashboardOpen(true)}
         />
 
         <AskDentistSection
