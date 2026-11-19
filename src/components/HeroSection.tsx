@@ -6,6 +6,7 @@ import { AuthSession } from '../types/dental';
 interface HeroSectionProps {
   session?: AuthSession | null;
   onBookVisit: () => void;
+  onOpenDoctorPortal?: () => void;
 }
 
 const CLINIC_METRICS = [
@@ -31,7 +32,11 @@ const CLINIC_METRICS = [
   },
 ];
 
-export function HeroSection({ session, onBookVisit }: HeroSectionProps) {
+export function HeroSection({
+  session,
+  onBookVisit,
+  onOpenDoctorPortal,
+}: HeroSectionProps) {
   const [imgError, setImgError] = useState(false);
 
   return (
@@ -76,14 +81,25 @@ export function HeroSection({ session, onBookVisit }: HeroSectionProps) {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-5">
-              <button
-                type="button"
-                onClick={onBookVisit}
-                className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3.5 text-sm font-semibold text-[#091830] shadow-lg shadow-blue-950/35 hover:bg-sky-50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#091830]"
-              >
-                Book Consultation
-                <ArrowRight className="h-4 w-4 text-blue-700" aria-hidden="true" />
-              </button>
+              {session?.role === 'doctor' ? (
+                <button
+                  type="button"
+                  onClick={onOpenDoctorPortal}
+                  className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3.5 text-sm font-semibold text-[#091830] shadow-lg shadow-blue-950/35 hover:bg-sky-50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#091830]"
+                >
+                  Open Doctor Dashboard
+                  <ArrowRight className="h-4 w-4 text-blue-700" aria-hidden="true" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onBookVisit}
+                  className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3.5 text-sm font-semibold text-[#091830] shadow-lg shadow-blue-950/35 hover:bg-sky-50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#091830]"
+                >
+                  Book Consultation
+                  <ArrowRight className="h-4 w-4 text-blue-700" aria-hidden="true" />
+                </button>
+              )}
 
               <a
                 href="#ask-sec"

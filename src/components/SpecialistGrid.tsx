@@ -4,11 +4,13 @@ import { DOCTORS, PATIENT_TESTIMONIALS } from '../data/seedData';
 import { Doctor } from '../types/dental';
 
 interface SpecialistGridProps {
+  isDoctor?: boolean;
   onBookWithDoctor: (doctor: Doctor) => void;
   onSelectDoctor: (doctor: Doctor) => void;
 }
 
 export function SpecialistGrid({
+  isDoctor = false,
   onBookWithDoctor,
   onSelectDoctor,
 }: SpecialistGridProps) {
@@ -56,8 +58,9 @@ export function SpecialistGrid({
             Meet the specialists guiding your dental care.
           </h2>
           <p className="mt-3 text-base text-slate-700">
-            Click any specialist card to view their full profile popup, or book
-            directly into their live schedule.
+            {isDoctor
+              ? 'Click any specialist card to view their clinical profile and availability.'
+              : 'Click any specialist card to view their full profile popup, or book directly into their live schedule.'}
           </p>
         </div>
 
@@ -169,7 +172,11 @@ export function SpecialistGrid({
                     </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2.5">
+                  <div
+                    className={`mt-4 grid gap-2.5 ${
+                      isDoctor ? 'grid-cols-1' : 'grid-cols-2'
+                    }`}
+                  >
                     <button
                       type="button"
                       onClick={() => onSelectDoctor(doctor)}
@@ -177,14 +184,16 @@ export function SpecialistGrid({
                     >
                       View Profile
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => onBookWithDoctor(doctor)}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#091830] px-3 py-2.5 text-xs font-semibold text-white group-hover:bg-blue-700 transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-                    >
-                      <CalendarCheck2 className="h-3.5 w-3.5" aria-hidden="true" />
-                      Book Visit
-                    </button>
+                    {!isDoctor && (
+                      <button
+                        type="button"
+                        onClick={() => onBookWithDoctor(doctor)}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#091830] px-3 py-2.5 text-xs font-semibold text-white group-hover:bg-blue-700 transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                      >
+                        <CalendarCheck2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        Book Visit
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

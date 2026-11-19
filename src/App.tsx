@@ -78,7 +78,15 @@ export default function App() {
     return item.id !== 'apt-2041';
   }).length;
 
+  const isDoctor = session?.role === 'doctor';
+
   const openBooking = (doctorId?: string, treatmentId?: string) => {
+    if (session?.role === 'doctor') {
+      setToastMessage(
+        'Doctor accounts cannot book patient consultations. Sign out or use a patient account to book.',
+      );
+      return;
+    }
     setPreselectedDoctorId(doctorId);
     setPreselectedTreatmentId(treatmentId);
     setBookingModalOpen(true);
@@ -87,6 +95,7 @@ export default function App() {
   const handleLoginSuccess = (newSession: AuthSession) => {
     setSession(newSession);
     if (newSession.role === 'doctor') {
+      setBookingModalOpen(false);
       setDoctorDashboardOpen(true);
       setToastMessage(`Welcome back, ${newSession.name}.`);
     } else {
@@ -190,9 +199,14 @@ export default function App() {
       />
 
       <main>
-        <HeroSection session={session} onBookVisit={() => openBooking()} />
+        <HeroSection
+          session={session}
+          onBookVisit={() => openBooking()}
+          onOpenDoctorPortal={() => setDoctorDashboardOpen(true)}
+        />
 
         <TreatmentShowcase
+          isDoctor={isDoctor}
           onSelectTreatment={(treatment) => setSelectedTreatment(treatment)}
           onQuickBook={(treatment) =>
             openBooking(treatment.recommendedDoctorId, treatment.id)
@@ -200,6 +214,7 @@ export default function App() {
         />
 
         <SpecialistGrid
+          isDoctor={isDoctor}
           onSelectDoctor={(doctor) => setSelectedDoctor(doctor)}
           onBookWithDoctor={handleBookWithDoctor}
         />
@@ -215,10 +230,14 @@ export default function App() {
         <PreVisitSection />
       </main>
 
-      <Footer onBookVisit={() => openBooking()} />
+      <Footer
+        isDoctor={isDoctor}
+        onBookVisit={() => openBooking()}
+        onOpenDoctorPortal={() => setDoctorDashboardOpen(true)}
+      />
 
       <BookingModal
-        isOpen={bookingModalOpen}
+        isOpen={bookingModalOpen && !isDoctor}
         session={session}
         initialDoctorId={preselectedDoctorId}
         initialTreatmentId={preselectedTreatmentId}
@@ -229,12 +248,14 @@ export default function App() {
 
       <TreatmentDetailModal
         treatment={selectedTreatment}
+        isDoctor={isDoctor}
         onClose={() => setSelectedTreatment(null)}
         onBookTreatment={handleBookTreatment}
       />
 
       <DoctorDetailModal
         doctor={selectedDoctor}
+        isDoctor={isDoctor}
         onClose={() => setSelectedDoctor(null)}
         onBookDoctor={handleBookWithDoctor}
       />
@@ -249,6 +270,7 @@ export default function App() {
         onNewBooking={() => openBooking()}
         onOpenLogin={() => setLoginModalOpen(true)}
         onLogout={handleLogout}
+        onOpenDoctorPortal={() => setDoctorDashboardOpen(true)}
       />
 
       <LoginModal

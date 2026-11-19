@@ -30,6 +30,7 @@ interface AppointmentsDrawerProps {
   onNewBooking: () => void;
   onOpenLogin: () => void;
   onLogout: () => void;
+  onOpenDoctorPortal?: () => void;
 }
 
 export function AppointmentsDrawer({
@@ -42,6 +43,7 @@ export function AppointmentsDrawer({
   onNewBooking,
   onOpenLogin,
   onLogout,
+  onOpenDoctorPortal,
 }: AppointmentsDrawerProps) {
   const [statusFilter, setStatusFilter] = useState<
     'All' | 'Confirmed' | 'Cancelled'
@@ -383,17 +385,30 @@ export function AppointmentsDrawer({
         </div>
 
         <div className="border-t border-slate-200 bg-white p-6">
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              onNewBooking();
-            }}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition-colors cursor-pointer"
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Book New Appointment
-          </button>
+          {session?.role === 'doctor' ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenDoctorPortal?.();
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition-colors cursor-pointer"
+            >
+              Open Doctor Dashboard
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onNewBooking();
+              }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition-colors cursor-pointer"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Book New Appointment
+            </button>
+          )}
         </div>
       </div>
 

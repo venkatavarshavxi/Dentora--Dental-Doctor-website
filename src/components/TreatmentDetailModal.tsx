@@ -4,12 +4,14 @@ import { Treatment } from '../types/dental';
 
 interface TreatmentDetailModalProps {
   treatment: Treatment | null;
+  isDoctor?: boolean;
   onClose: () => void;
   onBookTreatment: (treatment: Treatment) => void;
 }
 
 export function TreatmentDetailModal({
   treatment,
+  isDoctor = false,
   onClose,
   onBookTreatment,
 }: TreatmentDetailModalProps) {
@@ -87,14 +89,16 @@ export function TreatmentDetailModal({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onBookTreatment(treatment)}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 transition-colors cursor-pointer"
-          >
-            Schedule Treatment
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </button>
+          {!isDoctor && (
+            <button
+              type="button"
+              onClick={() => onBookTreatment(treatment)}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 transition-colors cursor-pointer"
+            >
+              Schedule Treatment
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
     </div>
