@@ -24,7 +24,6 @@ import {
 } from '../types/dental';
 import { downloadAppointmentSlip } from '../utils/appointmentSlip';
 import { getNextOpenClinicDate, isSundayDate } from '../utils/clinicDates';
-import { sendBookingConfirmationEmail } from '../utils/emailConfirmation';
 import {
   buildClinicWhatsAppUrl,
   buildPatientWhatsAppUrl,
@@ -93,7 +92,6 @@ export function BookingModal({
   const [step, setStep] = useState<'form' | 'confirmed'>('form');
   const [error, setError] = useState('');
   const [confirmedApt, setConfirmedApt] = useState<Appointment | null>(null);
-  const [emailFeedback, setEmailFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     if (session?.role === 'customer') {
@@ -130,7 +128,6 @@ export function BookingModal({
       setWhatsappHint('');
       setStep('form');
       setConfirmedApt(null);
-      setEmailFeedback(null);
     }
   }, [isOpen, initialDoctorId, initialTreatmentId, session]);
 
@@ -298,19 +295,6 @@ export function BookingModal({
 
     setConfirmedApt(result.appointment);
     setStep('confirmed');
-    setEmailFeedback(`Sending confirmation email to ${result.appointment.patientEmail}...`);
-
-    void sendBookingConfirmationEmail(result.appointment).then((dispatch) => {
-      if (dispatch.mode === 'emailjs_sent') {
-        setEmailFeedback(dispatch.message);
-      } else if (dispatch.mode === 'emailjs_failed') {
-        setEmailFeedback(dispatch.message);
-      } else {
-        setEmailFeedback(
-          'Your chair slot is reserved. Send your slip to WhatsApp, print, or download below.',
-        );
-      }
-    });
   };
 
   return (
@@ -344,8 +328,7 @@ export function BookingModal({
                   Consultation Confirmed
                 </h3>
                 <p className="text-xs text-slate-600 sm:text-sm">
-                  {emailFeedback ||
-                    'Your chair slot is reserved. Send your pass to WhatsApp or download below.'}
+                  Your chair slot is reserved. Send your pass to WhatsApp, print, or download below.
                 </p>
               </div>
             </div>
