@@ -46,7 +46,7 @@ export function AppointmentsDrawer({
   onOpenDoctorPortal,
 }: AppointmentsDrawerProps) {
   const [statusFilter, setStatusFilter] = useState<
-    'All' | 'Confirmed' | 'Cancelled'
+    'All' | 'Confirmed' | 'Completed' | 'Cancelled'
   >('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
@@ -200,21 +200,23 @@ export function AppointmentsDrawer({
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1">
-            {(['All', 'Confirmed', 'Cancelled'] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setStatusFilter(tab)}
-                className={`rounded-md py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
-                  statusFilter === tab
-                    ? 'bg-white text-blue-700 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+          <div className="grid grid-cols-4 gap-1 rounded-lg bg-slate-100 p-1">
+            {(['All', 'Confirmed', 'Completed', 'Cancelled'] as const).map(
+              (tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setStatusFilter(tab)}
+                  className={`rounded-md py-1.5 text-[11px] font-semibold transition-colors cursor-pointer ${
+                    statusFilter === tab
+                      ? 'bg-white text-blue-700 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ),
+            )}
           </div>
         </div>
 
@@ -250,7 +252,11 @@ export function AppointmentsDrawer({
                     </span>
                     <span
                       className={`font-semibold ${
-                        isConfirmed ? 'text-blue-700' : 'text-slate-400'
+                        isConfirmed
+                          ? 'text-blue-700'
+                          : apt.status === 'Completed'
+                            ? 'text-emerald-700'
+                            : 'text-slate-400'
                       }`}
                     >
                       {apt.status}

@@ -65,7 +65,7 @@ export interface Appointment {
   date: string;
   timeSlot: string;
   notes: string;
-  status: 'Confirmed' | 'Cancelled';
+  status: 'Confirmed' | 'Completed' | 'Cancelled';
   createdAt: string;
 }
 

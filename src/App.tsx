@@ -16,6 +16,7 @@ import { TreatmentShowcase } from './components/TreatmentShowcase';
 import { loadSession, saveSession } from './db/authStore';
 import {
   cancelAppointment,
+  completeAppointment,
   loadAppointments,
   loadQuestions,
   replyToQuestion,
@@ -156,6 +157,12 @@ export default function App() {
     setToastMessage('Appointment cancelled and slot released.');
   };
 
+  const handleCompleteAppointment = (id: string) => {
+    const updated = completeAppointment(id);
+    setAppointments(updated);
+    setToastMessage('Appointment marked as completed.');
+  };
+
   const handleSubmitQuestion = (input: {
     patientName: string;
     patientEmail: string;
@@ -286,6 +293,8 @@ export default function App() {
         questions={questions}
         onClose={() => setDoctorDashboardOpen(false)}
         onCancelAppointment={handleCancelAppointment}
+        onCompleteAppointment={handleCompleteAppointment}
+        onRescheduleAppointment={handleRescheduleAppointment}
         onReplyQuestion={handleReplyQuestion}
         onLogout={handleLogout}
       />
