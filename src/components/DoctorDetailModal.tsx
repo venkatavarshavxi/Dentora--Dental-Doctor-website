@@ -3,12 +3,14 @@ import { Doctor } from '../types/dental';
 
 interface DoctorDetailModalProps {
   doctor: Doctor | null;
+  isDoctor?: boolean;
   onClose: () => void;
   onBookDoctor: (doctor: Doctor) => void;
 }
 
 export function DoctorDetailModal({
   doctor,
+  isDoctor = false,
   onClose,
   onBookDoctor,
 }: DoctorDetailModalProps) {
@@ -89,16 +91,18 @@ export function DoctorDetailModal({
               </div>
             </div>
 
-            <div className="mt-6 border-t border-slate-100 pt-5">
-              <button
-                type="button"
-                onClick={() => onBookDoctor(doctor)}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 active:scale-[0.99] transition-all cursor-pointer"
-              >
-                <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
-                Book Consultation with {doctor.name}
-              </button>
-            </div>
+            {!isDoctor && (
+              <div className="mt-6 border-t border-slate-100 pt-5">
+                <button
+                  type="button"
+                  onClick={() => onBookDoctor(doctor)}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800 active:scale-[0.99] transition-all cursor-pointer"
+                >
+                  <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
+                  Book Consultation with {doctor.name}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

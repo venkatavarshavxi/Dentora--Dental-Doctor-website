@@ -4,10 +4,16 @@ import { buildClinicWhatsAppUrl } from '../utils/whatsappSlip';
 import { ToothIcon } from './ToothIcon';
 
 interface FooterProps {
+  isDoctor?: boolean;
   onBookVisit: () => void;
+  onOpenDoctorPortal?: () => void;
 }
 
-export function Footer({ onBookVisit }: FooterProps) {
+export function Footer({
+  isDoctor = false,
+  onBookVisit,
+  onOpenDoctorPortal,
+}: FooterProps) {
   return (
     <footer className="border-t border-white/10 bg-[#071326] py-12 text-slate-300">
       <div className="mx-auto max-w-6xl px-6">
@@ -63,15 +69,25 @@ export function Footer({ onBookVisit }: FooterProps) {
               href="#ask-sec"
               className="text-slate-300 hover:text-sky-300 transition-colors"
             >
-              Ask a Dentist
+              {isDoctor ? 'Patient Q&A' : 'Ask a Dentist'}
             </a>
-            <button
-              type="button"
-              onClick={onBookVisit}
-              className="font-semibold text-sky-300 hover:text-sky-200 cursor-pointer"
-            >
-              Book Consultation
-            </button>
+            {isDoctor ? (
+              <button
+                type="button"
+                onClick={onOpenDoctorPortal}
+                className="font-semibold text-sky-300 hover:text-sky-200 cursor-pointer"
+              >
+                Doctor Dashboard
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onBookVisit}
+                className="font-semibold text-sky-300 hover:text-sky-200 cursor-pointer"
+              >
+                Book Consultation
+              </button>
+            )}
           </div>
         </div>
 

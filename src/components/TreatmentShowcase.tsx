@@ -4,6 +4,7 @@ import { DOCTORS, HERO_CLINIC_IMAGE, TREATMENTS } from '../data/seedData';
 import { Treatment, TreatmentCategory } from '../types/dental';
 
 interface TreatmentShowcaseProps {
+  isDoctor?: boolean;
   onSelectTreatment: (treatment: Treatment) => void;
   onQuickBook: (treatment: Treatment) => void;
 }
@@ -16,6 +17,7 @@ const CATEGORIES: Array<'All Treatments' | TreatmentCategory> = [
 ];
 
 export function TreatmentShowcase({
+  isDoctor = false,
   onSelectTreatment,
   onQuickBook,
 }: TreatmentShowcaseProps) {
@@ -146,18 +148,20 @@ export function TreatmentShowcase({
                     >
                       View Steps
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => onQuickBook(treatment)}
-                      aria-label={`Book ${treatment.title}`}
-                      className="inline-flex items-center gap-1 rounded-lg bg-[#091830] px-3 py-2 text-xs font-semibold text-white group-hover:bg-blue-700 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      Book
-                      <ArrowUpRight
-                        className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                        aria-hidden="true"
-                      />
-                    </button>
+                    {!isDoctor && (
+                      <button
+                        type="button"
+                        onClick={() => onQuickBook(treatment)}
+                        aria-label={`Book ${treatment.title}`}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#091830] px-3 py-2 text-xs font-semibold text-white group-hover:bg-blue-700 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      >
+                        Book
+                        <ArrowUpRight
+                          className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

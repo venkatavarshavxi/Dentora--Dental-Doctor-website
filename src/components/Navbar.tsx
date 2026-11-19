@@ -91,13 +91,23 @@ export function Navbar({
 
         {/* Zone 3: 1 Primary CTA action */}
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={onOpenBooking}
-            className="hidden sm:inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 active:scale-[0.98] transition-all whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#091830]"
-          >
-            Book Visit
-          </button>
+          {session?.role === 'doctor' ? (
+            <button
+              type="button"
+              onClick={onOpenDoctorPortal}
+              className="hidden sm:inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 active:scale-[0.98] transition-all whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#091830]"
+            >
+              Open Dashboard
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenBooking}
+              className="hidden sm:inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 active:scale-[0.98] transition-all whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#091830]"
+            >
+              Book Visit
+            </button>
+          )}
 
           <button
             type="button"
@@ -154,16 +164,29 @@ export function Navbar({
           >
             {authLabel}
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              onOpenBooking();
-            }}
-            className="w-full rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors cursor-pointer"
-          >
-            Book Visit
-          </button>
+          {session?.role === 'doctor' ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenDoctorPortal();
+              }}
+              className="w-full rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors cursor-pointer"
+            >
+              Open Dashboard
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenBooking();
+              }}
+              className="w-full rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-colors cursor-pointer"
+            >
+              Book Visit
+            </button>
+          )}
         </div>
       )}
     </header>
