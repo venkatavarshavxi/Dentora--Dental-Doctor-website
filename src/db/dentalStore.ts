@@ -196,6 +196,15 @@ export function cancelAppointment(id: string): Appointment[] {
   return updated;
 }
 
+export function completeAppointment(id: string): Appointment[] {
+  const existing = loadAppointments();
+  const updated = existing.map((apt) =>
+    apt.id === id ? { ...apt, status: 'Completed' as const } : apt,
+  );
+  localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(updated));
+  return updated;
+}
+
 export function loadQuestions(): DentalQuestion[] {
   try {
     const raw = localStorage.getItem(QUESTIONS_KEY);
